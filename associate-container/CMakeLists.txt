@@ -3,5 +3,7 @@
 set(AC associate-container)
 set(AC_HEADER PUBLIC include)
 
-add_library(${AC} STATIC src/calculator.cpp)
+file(GLOB_RECURSE AC_SOURCES src/*.cpp)
+
+add_library(${AC} STATIC ${AC_SOURCES})
 target_include_directories(${AC} ${AC_HEADER})

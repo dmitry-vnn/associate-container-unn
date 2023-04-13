@@ -25,12 +25,14 @@ FetchContent_MakeAvailable(googletest)
 
 
 # ========================== CREATE TESTS EXECUTABLE =========================
+file(GLOB_RECURSE TESTS_FOLDER tests/*.cpp)
+
 enable_testing()
 
 add_executable(
 	run_all_tests							#Name of executable file
 											#Add source files (test files)
-	tests/test.cpp
+	${TESTS_FOLDER}
 )
 
 target_link_libraries(						#Connect libraries

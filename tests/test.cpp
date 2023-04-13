@@ -1,9 +1,8 @@
 #include <gtest/gtest.h>
 
-#include "calculator.h"
+#include "array_table.h"
 
 TEST(CALCULATOR, Get)
 {
-	Calculator c;
-	EXPECT_EQ(c.Calc(), 555);
+	ArrayTable<int, int> at;
 }
