@@ -2,7 +2,7 @@
 
 #include "scan_table.h"
 
-TEST(SCAN_TABLE, InitAndPrint)
+TEST(SCAN_TABLE, InitAndCheck)
 {
 	ScanTable<std::string, int> table;
 
@@ -24,4 +24,10 @@ TEST(SCAN_TABLE, InitAndPrint)
 		*table.Find("Carl"),
 		32
 	);
+
+	/*
+	 *	MEMORY LEAK
+	 *	MAKE RECORD VALUE AS UNIQUE_PTR
+	 *	AND EVEN BETTER TO MAKE VALUE AS ANY MOVED TYPE
+	*/
 }
