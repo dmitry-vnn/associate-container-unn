@@ -72,6 +72,7 @@ private:
 protected:
 	void PushBack(const TRecord& record);
 	void Insert(const TRecord& record, size_t position);
+	void Remove(size_t position);
 
 
 };
@@ -156,5 +157,24 @@ void ArrayTable<K, V>::Insert(const TRecord& record, size_t position)
 
 		_size++;
 	}
+}
+
+template <class K, class V>
+void ArrayTable<K, V>::Remove(size_t position)
+{
+	if (position >= _size)
+	{
+		return;
+	}
+
+	if (position < _size - 1)
+	{
+		for (size_t i = position; i < _size - 1; i++)
+		{
+			_data[i] = _data[i + 1];
+		}
+	}
+
+	_size--;
 }
 
