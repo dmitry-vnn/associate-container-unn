@@ -63,15 +63,15 @@ public:
 protected:
 
 
-	void EnsureCapacity(size_t multiplier);
+	void EnsureCapacity();
 	void PushBack(const TRecord& record);
 
 };
 
 template <class K, class V>
-void ArrayTable<K, V>::EnsureCapacity(size_t multiplier)
+void ArrayTable<K, V>::EnsureCapacity()
 {
-	auto ensuredCapacity = _capacity * multiplier;
+	auto ensuredCapacity = _capacity * _ensureMultiplier;
 
 	auto* ensuredData = new Record<K, V>[ensuredCapacity];
 	std::copy(_data, _data + _capacity, ensuredData);
@@ -87,6 +87,7 @@ void ArrayTable<K, V>::PushBack(const TRecord& record)
 {
 	if (_capacity == _recordsCount)
 	{
-		EnsureCapacity()
+		EnsureCapacity();
 	}
+	_data[_recordsCount++] = record;
 }
