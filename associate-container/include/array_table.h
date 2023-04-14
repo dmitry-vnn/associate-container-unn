@@ -167,12 +167,9 @@ void ArrayTable<K, V>::Remove(size_t position)
 		return;
 	}
 
-	if (position < _size - 1)
+	for (size_t i = position; i < _size - 1; i++)
 	{
-		for (size_t i = position; i < _size - 1; i++)
-		{
-			_data[i] = _data[i + 1];
-		}
+		_data[i] = _data[i + 1];
 	}
 
 	_size--;
