@@ -2,7 +2,7 @@
 
 #include "table.h"
 
-template<class K, class V>
+/*template<class K, class V>
 class ArrayTableIterator final : public TableIterator<K, V>
 {
 
@@ -18,14 +18,14 @@ public:
 		++base::_recordCursor;
 		return *this;
 	}
-};
+}; */
 
 template<class K, class V>
 class ArrayTable : public Table<K, V> {
 
 private:
 	typedef typename Table<K, V>::TRecord TRecord;
-	typedef ArrayTableIterator<K, V> Iterator;
+	//typedef ArrayTableIterator<K, V> Iterator;
 
 private:
 	size_t _ensureMultiplier;
@@ -53,10 +53,10 @@ protected:
 	}
 
 public:
-	typename Table<K, V>::Iterator Begin() override { return Iterator(_data); }
-	typename Table<K, V>::Iterator End() override { return Iterator(_data + _capacity); }
-	typename Table<K, V>::ConstIterator Begin() const override { return const_cast<ArrayTable*>(this)->Begin(); }
-	typename Table<K, V>::ConstIterator End() const override { return const_cast<ArrayTable*>(this)->End(); }
+	//typename Table<K, V>::Iterator Begin() override { return Iterator(_data); }
+	//typename Table<K, V>::Iterator End() override { return Iterator(_data + _capacity); }
+	//typename Table<K, V>::ConstIterator Begin() const override { return const_cast<ArrayTable*>(this)->Begin(); }
+	//typename Table<K, V>::ConstIterator End() const override { return const_cast<ArrayTable*>(this)->End(); }
 
 public:
 	void Remove(const K& key) override;
@@ -74,10 +74,10 @@ protected:
 	 * \param key - element key
 	 * \return index
 	 */
-	virtual int FindPosition(const K& key) = 0;
+	virtual int FindPosition(const K& key) const = 0;
 
 private:
-	std::pair<TRecord*, size_t> AllocateEnsuredCapacity();
+	std::pair<TRecord*, size_t> AllocateEnsuredCapacity() const;
 
 protected:
 	void EnsureCapacity();
@@ -108,7 +108,7 @@ void ArrayTable<K, V>::Remove(const K& key)
 template <class K, class V>
 V* ArrayTable<K, V>::Find(const K& key) const
 {
-	auto position = FindPosition(key);
+	int position = FindPosition(key);
 
 	if (position >= 0)
 	{
@@ -119,19 +119,21 @@ V* ArrayTable<K, V>::Find(const K& key) const
 }
 
 template <class K, class V>
-std::pair<typename ArrayTable<K, V>::TRecord*, size_t> ArrayTable<K, V>::AllocateEnsuredCapacity()
+std::pair<typename ArrayTable<K, V>::TRecord*, size_t> ArrayTable<K, V>::AllocateEnsuredCapacity() const
 {
 	auto ensuredCapacity = _capacity * _ensureMultiplier;
 	auto* ensuredData = new Record<K, V>[ensuredCapacity];
 
-	return { ensuredCapacity, ensuredData };
+	return { ensuredData, ensuredCapacity };
 }
 
 template <class K, class V>
 void ArrayTable<K, V>::EnsureCapacity()
 {
-	auto [ensuredData, ensuredCapacity]
-		= AllocateEnsuredCapacity();
+	auto pair = AllocateEnsuredCapacity();
+
+	auto ensuredData = pair.first;
+	auto ensuredCapacity = pair.second;
 
 	std::copy(_data, _data + _capacity, ensuredData);
 

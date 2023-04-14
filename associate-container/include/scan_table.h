@@ -11,7 +11,7 @@ private:
 	typedef ArrayTable<K, V> base;
 
 public:
-	explicit ScanTable(size_t initialCapacity):
+	explicit ScanTable(size_t initialCapacity = 10):
 		base(initialCapacity) {}
 
 	ScanTable(std::initializer_list<TRecord> list):
@@ -21,7 +21,7 @@ public:
 	void Add(const K& key, V* value) override;
 
 protected:
-	int FindPosition(const K& key) override;
+	int FindPosition(const K& key) const override;
 
 public:
 	~ScanTable() override = default;
@@ -30,25 +30,22 @@ public:
 template <class K, class V>
 void ScanTable<K, V>::Add(const K& key, V* value)
 {
-	base::PushBack("");
+	base::PushBack({key, value});
 }
 
 template <class K, class V>
-V* ScanTable<K, V>::Find(const K& key) const
+int ScanTable<K, V>::FindPosition(const K& key) const
 {
 
-	auto iterator = base::Begin();
-
-	while (iterator != base::End())
+	for (size_t i = 0; i < base::_size; i++)
 	{
-		auto record = *iterator;
-
-		if (record.key == key)
+		if (base::_data[i].key == key)
 		{
-			return record.value;
+			return i;
 		}
 	}
 
-	return nullptr;
+	return -1;
 
 }
+

@@ -17,7 +17,7 @@ namespace detail
 
 using namespace detail;
 
-template<class K, class V>
+/*template<class K, class V>
 class TableIterator : public std::iterator<std::input_iterator_tag, Record<K, V>> {
 
 private:
@@ -41,7 +41,7 @@ public:
 	virtual TableIterator& operator++() = 0;
 	virtual typename TableIterator::reference operator*() const { return *_recordCursor; }
 
-};
+}; */
 
 template<class K, class V>
 class Table
@@ -58,14 +58,14 @@ public:
 
 public:
 
-	typedef TableIterator<K, V> Iterator;
-	typedef TableIterator<const K, V> ConstIterator;
-
-	virtual Iterator Begin() = 0;
-	virtual Iterator End() = 0;
-
-	virtual ConstIterator Begin() const = 0;
-	virtual ConstIterator End() const = 0;
+	//typedef TableIterator<K, V> Iterator;
+	//typedef TableIterator<const K, V> ConstIterator;
+	//
+	//virtual Iterator Begin() = 0;
+	//virtual Iterator End() = 0;
+	//
+	//virtual ConstIterator Begin() const = 0;
+	//virtual ConstIterator End() const = 0;
 
 public:
 
