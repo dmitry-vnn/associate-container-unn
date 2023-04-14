@@ -58,7 +58,23 @@ public:
 	typename Table<K, V>::ConstIterator Begin() const override { return const_cast<ArrayTable*>(this)->Begin(); }
 	typename Table<K, V>::ConstIterator End() const override { return const_cast<ArrayTable*>(this)->End(); }
 
+public:
+	void Remove(const K& key) override;
+	V* Find(const K& key) const override;
+
 	~ArrayTable() override { delete[] _data; }
+
+protected:
+	/**
+	 * \brief
+	 *
+	 * Inherits return key data index if it present
+	 * Otherwise, return -1;
+	 *
+	 * \param key - element key
+	 * \return index
+	 */
+	virtual int FindPosition(const K& key) = 0;
 
 private:
 	std::pair<TRecord*, size_t> AllocateEnsuredCapacity();
@@ -76,6 +92,31 @@ protected:
 
 
 };
+
+template <class K, class V>
+void ArrayTable<K, V>::Remove(const K& key)
+{
+	auto position = FindPosition(key);
+
+	if (position >= 0)
+	{
+		Remove(position);
+	}
+	
+}
+
+template <class K, class V>
+V* ArrayTable<K, V>::Find(const K& key) const
+{
+	auto position = FindPosition(key);
+
+	if (position >= 0)
+	{
+		return _data[position].value;
+	}
+
+	return nullptr;
+}
 
 template <class K, class V>
 std::pair<typename ArrayTable<K, V>::TRecord*, size_t> ArrayTable<K, V>::AllocateEnsuredCapacity()

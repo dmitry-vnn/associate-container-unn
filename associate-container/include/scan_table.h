@@ -3,7 +3,7 @@
 #include "array_table.h" 
 
 template<class K, class V>
-class ScanTable : public ArrayTable<K, V>
+class ScanTable final : public ArrayTable<K, V>
 {
 
 private:
@@ -17,12 +17,21 @@ public:
 	ScanTable(std::initializer_list<TRecord> list):
 		base(list.begin(), list.end()) {}
 
+public:
 	void Add(const K& key, V* value) override;
-	V* Find(const K& key) const override;
-	void Remove(const K& key) override;
 
+protected:
+	int FindPosition(const K& key) override;
+
+public:
 	~ScanTable() override = default;
 };
+
+template <class K, class V>
+void ScanTable<K, V>::Add(const K& key, V* value)
+{
+	base::PushBack("");
+}
 
 template <class K, class V>
 V* ScanTable<K, V>::Find(const K& key) const
