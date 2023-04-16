@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include <iterator>
+#include <memory>
 
 namespace detail
 {
@@ -17,8 +18,9 @@ namespace detail
 
 using namespace detail;
 
-/*template<class K, class V>
-class TableIterator : public std::iterator<std::input_iterator_tag, Record<K, V>> {
+
+template<class K, class V>
+class VirtualTableIterator {
 
 private:
 
@@ -27,21 +29,82 @@ private:
 protected:
 
 	TRecord* _recordCursor;
-	explicit TableIterator(TRecord* record) : _recordCursor(record) {}
+	explicit VirtualTableIterator(TRecord* record) : _recordCursor(record) {}
 
 public:
 
-	virtual ~TableIterator() = default;
+	virtual ~VirtualTableIterator() = default;
 
-	TableIterator(const TableIterator& other) = default;
-	TableIterator& operator=(const TableIterator & other) = default;
+	VirtualTableIterator(const VirtualTableIterator&) = default;
+	VirtualTableIterator& operator=(const VirtualTableIterator&) = default;
 
 public:
-	virtual bool operator!=(TableIterator const& other) const { return _recordCursor != other._recordCursor; }
-	virtual TableIterator& operator++() = 0;
-	virtual typename TableIterator::reference operator*() const { return *_recordCursor; }
+	virtual bool operator!=(VirtualTableIterator const& other) const
+	{
+		return _recordCursor != other._recordCursor;
+	}
+	virtual VirtualTableIterator& operator++() = 0;
+	virtual TRecord operator*() const { return *_recordCursor; }
 
-}; */
+};
+
+template<class K, class V>
+class TableIterator final : public std::iterator<std::input_iterator_tag, Record<K, V>> {
+
+private:
+	using base = std::iterator<std::input_iterator_tag, Record<K, V>>;
+
+private:
+	std::unique_ptr<VirtualTableIterator<K, V>> _iterator;
+
+public:
+	explicit TableIterator(
+		std::unique_ptr<VirtualTableIterator<K, V>> iteratorImplement
+	): _iterator(std::move(iteratorImplement)) {}
+
+	TableIterator(const TableIterator&) = delete;
+	TableIterator& operator=(const TableIterator&) = delete;
+
+	TableIterator(TableIterator&& other) noexcept :
+
+		//Base move calling
+		base(std::move(other)),
+
+		//Fields move calling
+		_iterator(std::move(other._iterator))
+
+	{}
+
+
+	TableIterator& operator=(TableIterator&& other) noexcept
+	{
+		if (this == &other)
+			return *this;
+
+		base::operator=(std::move(other));
+
+		_iterator = std::move(other._iterator);
+		return *this;
+	}
+
+	~TableIterator() = default;
+
+public:
+	bool operator!=(TableIterator const& other) const
+		{ return _iterator != other._iterator; }
+
+	TableIterator& operator++()
+	{
+		++_iterator;
+		return *this;
+	}
+	typename TableIterator::reference operator*() const
+	{
+		return *_iterator.get();
+	}
+
+};
+
 
 template<class K, class V>
 class Table
@@ -58,14 +121,14 @@ public:
 
 public:
 
-	//typedef TableIterator<K, V> Iterator;
-	//typedef TableIterator<const K, V> ConstIterator;
-	//
-	//virtual Iterator Begin() = 0;
-	//virtual Iterator End() = 0;
-	//
-	//virtual ConstIterator Begin() const = 0;
-	//virtual ConstIterator End() const = 0;
+	typedef TableIterator<K, V> Iterator;
+	typedef TableIterator<const K, V> ConstIterator;
+	
+	virtual Iterator Begin() = 0;
+	virtual Iterator End() = 0;
+	
+	virtual ConstIterator Begin() const = 0;
+	virtual ConstIterator End() const = 0;
 
 public:
 
