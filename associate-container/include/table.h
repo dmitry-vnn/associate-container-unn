@@ -2,34 +2,38 @@
 #include <iterator>
 #include <memory>
 
-namespace detail
-{
-	template<class K, class V>
-	struct Record {
-		K key;
-		V* value;
 
-		Record(const K& key = K(), V* value = nullptr) : key(key), value(value) {}
-	};
+template<class K, class V>
+struct Record {
+
+	K key;
+	V value;	//value must be movable
+
+	Record(const K& key, V value) : key(key), value(std::move(value)) {}
+
+	Record(const Record&) = delete;
+	Record(Record&&) noexcept = default;
 
 
+	Record& operator=(const Record&) = delete;
+	Record& operator=(Record&&) noexcept = default;
 
-}
-
-using namespace detail;
-
+	~Record() = default;
+};
 
 template<class K, class V>
 class VirtualTableIterator {
 
-private:
+public:
 
-	typedef Record<K, V> TRecord;
+	using TypedRecord = Record<K, V>;
+	using RecordPointer = TypedRecord*;
+	using RecordReference = TypedRecord&;
 
 protected:
 
-	TRecord* _recordCursor;
-	explicit VirtualTableIterator(TRecord* record) : _recordCursor(record) {}
+	RecordPointer _currentRecord;
+	explicit VirtualTableIterator(RecordPointer currentRecord) : _currentRecord(currentRecord) {}
 
 public:
 
@@ -39,12 +43,13 @@ public:
 	VirtualTableIterator& operator=(const VirtualTableIterator&) = default;
 
 public:
-	virtual bool operator!=(VirtualTableIterator const& other) const
+	virtual bool operator!=(const VirtualTableIterator& other) const
 	{
-		return _recordCursor != other._recordCursor;
+		return _currentRecord != other._currentRecord;
 	}
+
 	virtual VirtualTableIterator& operator++() = 0;
-	virtual TRecord operator*() const { return *_recordCursor; }
+	virtual RecordReference operator*() const { return *_currentRecord; }
 
 };
 
@@ -110,8 +115,8 @@ template<class K, class V>
 class Table
 {
 
-public:
-	typedef Record<K, V> TRecord;
+protected:
+	using TypedRecord = Record<K, V>;
 
 public:
 
@@ -121,9 +126,11 @@ public:
 
 public:
 
-	typedef TableIterator<K, V> Iterator;
-	typedef TableIterator<const K, V> ConstIterator;
-	
+
+	using Iterator = TableIterator<K, V>;
+	using ConstIterator = TableIterator<const K, V>;
+
+
 	virtual Iterator Begin() = 0;
 	virtual Iterator End() = 0;
 	

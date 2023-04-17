@@ -1,31 +1,33 @@
 ﻿#pragma once
 
 #include "table.h"
+#include <iostream>
 
-/*template<class K, class V>
-class ArrayTableIterator final : public TableIterator<K, V>
+template<class K, class V>
+class ArrayTableIterator final : public VirtualTableIterator<K, V>
 {
 
 private:
-	typedef TableIterator<K, V> base;
+	using base = VirtualTableIterator<K, V>;
 
 public:
-	explicit ArrayTableIterator(typename TableIterator<K, V>::TRecord* record):
-		TableIterator<K, V>(record) {}
+	explicit ArrayTableIterator(typename base::RecordPointer currentRecord):
+		VirtualTableIterator<K, V>(currentRecord) {}
 
 	TableIterator<K, V>& operator++() override
 	{
-		++base::_recordCursor;
+		//Increment the record pointer (pointer arithmetic)
+		++base::_currentRecord;
+
 		return *this;
 	}
-}; */
+};
 
 template<class K, class V>
 class ArrayTable : public Table<K, V> {
 
 private:
-	typedef typename Table<K, V>::TRecord TRecord;
-	//typedef ArrayTableIterator<K, V> Iterator;
+	using TypedRecord = typename Table<K, V>::TypedRecord;
 
 private:
 	size_t _ensureMultiplier;
@@ -39,17 +41,21 @@ protected:
 
 protected:
 
-	ArrayTable(size_t initialCapacity = 10, size_t ensureMultiplier = 2) :
+	explicit ArrayTable(size_t initialCapacity = 10, size_t ensureMultiplier = 2) :
 		_ensureMultiplier(ensureMultiplier), _size(0),
-		_capacity(initialCapacity), _data(new TRecord[_capacity])
+		_capacity(initialCapacity), _data(new TypedRecord[_capacity])
 	{}
 
 	template<class IteratorType>
 	ArrayTable(IteratorType first, IteratorType last, size_t ensureMultiplier = 2):
 		_ensureMultiplier(ensureMultiplier), _size(last - first),
-		_capacity(_size), _data(new TRecord[_capacity])
+		_capacity(_size), _data(new TypedRecord[_capacity])
 	{
-		std::copy(first, last, _data);
+		size_t index = 0;
+		while (first != last)
+		{
+			_data[index] = std::move( *(first++) );
+		}
 	}
 
 public:
