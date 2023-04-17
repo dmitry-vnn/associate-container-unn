@@ -2,6 +2,7 @@
 
 #include "scan_table.h"
 
+
 TEST(SCAN_TABLE, InitAndCheck)
 {
 	ScanTable<std::string, int> table;
@@ -24,6 +25,11 @@ TEST(SCAN_TABLE, InitAndCheck)
 		*table.Find("Carl"),
 		32
 	);
+
+	std::vector<int, int> v;
+	v.begin();
+
+
 
 	/*
 	 *	MEMORY LEAK
