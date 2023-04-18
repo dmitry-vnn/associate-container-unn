@@ -1,5 +1,7 @@
 ﻿#pragma once
 
+
+#include <iostream>
 #include "array_table.h" 
 
 template<class K, class V>
@@ -7,18 +9,19 @@ class ScanTable final : public ArrayTable<K, V>
 {
 
 private:
-	typedef typename Table<K, V>::TRecord TRecord;
-	typedef ArrayTable<K, V> base;
+	using base = ArrayTable<K, V>;
+	using TypedRecord = typename base::TypedRecord;
+	
 
 public:
 	explicit ScanTable(size_t initialCapacity = 10):
 		base(initialCapacity) {}
 
-	ScanTable(std::initializer_list<TRecord> list):
+	ScanTable(std::initializer_list<TypedRecord> list):
 		base(list.begin(), list.end()) {}
 
 public:
-	void Add(const K& key, V* value) override;
+	void Add(const K& key, V value) override;
 
 protected:
 	int FindPosition(const K& key) const override;
@@ -28,9 +31,9 @@ public:
 };
 
 template <class K, class V>
-void ScanTable<K, V>::Add(const K& key, V* value)
+void ScanTable<K, V>::Add(const K& key, V value)
 {
-	base::PushBack({key, value});
+	base::PushBack(std::move(TypedRecord{key, value}));
 }
 
 template <class K, class V>
@@ -48,4 +51,3 @@ int ScanTable<K, V>::FindPosition(const K& key) const
 	return -1;
 
 }
-

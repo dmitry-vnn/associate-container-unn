@@ -1,5 +1,7 @@
 ﻿#pragma once
 
+//#ifdef DEBB
+
 #include "table.h"
 #include <iostream>
 
@@ -14,20 +16,34 @@ public:
 	explicit ArrayTableIterator(typename base::RecordPointer currentRecord):
 		VirtualTableIterator<K, V>(currentRecord) {}
 
-	TableIterator<K, V>& operator++() override
+	ArrayTableIterator& operator++() override
 	{
 		//Increment the record pointer (pointer arithmetic)
 		++base::_currentRecord;
 
 		return *this;
 	}
+
+	static TableIterator<K, V> Create(typename base::RecordPointer currentRecord)
+	{
+		return TableIterator<K, V>(std::move(std::make_unique<ArrayTableIterator>(currentRecord)));
+	}
+
 };
 
 template<class K, class V>
 class ArrayTable : public Table<K, V> {
 
 private:
-	using TypedRecord = typename Table<K, V>::TypedRecord;
+
+	using base = Table<K, V>;
+
+protected:
+
+	using TypedRecord = typename base::TypedRecord;
+	using RecordPointer = typename base::RecordPointer;
+	using RecordReference = typename base::RecordReference;
+	using ConstRecordReference = const RecordReference;
 
 private:
 	size_t _ensureMultiplier;
@@ -36,7 +52,7 @@ protected:
 
 	size_t _size;
 	size_t _capacity;
-	Record<K, V>* _data;
+	RecordPointer _data;
 
 
 protected:
@@ -59,19 +75,19 @@ protected:
 	}
 
 public:
-	//typename Table<K, V>::Iterator Begin() override { return Iterator(_data); }
-	//typename Table<K, V>::Iterator End() override { return Iterator(_data + _capacity); }
-	//typename Table<K, V>::ConstIterator Begin() const override { return const_cast<ArrayTable*>(this)->Begin(); }
-	//typename Table<K, V>::ConstIterator End() const override { return const_cast<ArrayTable*>(this)->End(); }
+	typename base::ConstIterator Begin() const override { return ArrayTableIterator<K, V>::Create(_data); }
+	typename base::ConstIterator End() const override { return ArrayTableIterator<K, V>::Create(_data + _size); }
+	typename base::Iterator Begin() override { return const_cast<const ArrayTable*>(this)->Begin(); } //DELEGATE TO CONST METHOD INVOCATION
+	typename base::Iterator End() override { return const_cast<const ArrayTable*>(this)->End(); }	 //
 
 public:
 	void Remove(const K& key) override;
-	V* Find(const K& key) const override;
+	typename base::ConstIterator Find(const K& key) const override;
 
 	~ArrayTable() override { delete[] _data; }
 
 protected:
-	/**
+	/*
 	 * \brief
 	 *
 	 * Inherits return key data index if it present
@@ -83,7 +99,7 @@ protected:
 	virtual int FindPosition(const K& key) const = 0;
 
 private:
-	std::pair<TRecord*, size_t> AllocateEnsuredCapacity() const;
+	std::pair<RecordPointer, size_t> AllocateEnsuredCapacity() const;
 
 protected:
 	void EnsureCapacity();
@@ -92,8 +108,8 @@ private:
 	void EnsureCapacityIfDataIsFull();
 
 protected:
-	void PushBack(const TRecord& record);
-	void Insert(const TRecord& record, size_t position);
+	void PushBack(TypedRecord record);
+	void Insert(TypedRecord record, size_t position);
 	void Remove(size_t position);
 
 
@@ -112,23 +128,25 @@ void ArrayTable<K, V>::Remove(const K& key)
 }
 
 template <class K, class V>
-V* ArrayTable<K, V>::Find(const K& key) const
+typename Table<K, V>::ConstIterator ArrayTable<K, V>::Find(const K& key) const
 {
 	int position = FindPosition(key);
 
-	if (position >= 0)
+	auto dataOffset = _data + _size;
+
+	if (position != -1)
 	{
-		return _data[position].value;
+		dataOffset = _data + position;
 	}
 
-	return nullptr;
+	return ArrayTableIterator<K, V>::Create(dataOffset);
 }
 
 template <class K, class V>
-std::pair<typename ArrayTable<K, V>::TRecord*, size_t> ArrayTable<K, V>::AllocateEnsuredCapacity() const
+std::pair<typename ArrayTable<K, V>::RecordPointer, size_t> ArrayTable<K, V>::AllocateEnsuredCapacity() const
 {
 	auto ensuredCapacity = _capacity * _ensureMultiplier;
-	auto* ensuredData = new Record<K, V>[ensuredCapacity];
+	auto ensuredData = new Record<K, V>[ensuredCapacity];
 
 	return { ensuredData, ensuredCapacity };
 }
@@ -141,7 +159,7 @@ void ArrayTable<K, V>::EnsureCapacity()
 	auto ensuredData = pair.first;
 	auto ensuredCapacity = pair.second;
 
-	std::copy(_data, _data + _capacity, ensuredData);
+	std::move(_data, _data + _capacity, ensuredData);
 
 	delete[] _data;
 
@@ -159,14 +177,14 @@ void ArrayTable<K, V>::EnsureCapacityIfDataIsFull()
 }
 
 template <class K, class V>
-void ArrayTable<K, V>::PushBack(const TRecord& record)
+void ArrayTable<K, V>::PushBack(TypedRecord record)
 {
 	EnsureCapacityIfDataIsFull();
-	_data[_size++] = record;
+	_data[_size++] = std::move(record);
 }
 
 template <class K, class V>
-void ArrayTable<K, V>::Insert(const TRecord& record, size_t position)
+void ArrayTable<K, V>::Insert(TypedRecord record, size_t position)
 {
 	if (position < _size)	//OR ELSE DISCONTINUOUS INSERTION DISALLOWED
 	{
@@ -174,30 +192,30 @@ void ArrayTable<K, V>::Insert(const TRecord& record, size_t position)
 		{
 			for (size_t i = _size; i > position; i++)
 			{
-				_data[i] = _data[i - 1];
+				_data[i] = std::move(_data[i - 1]);
 			}
 
-			_data[position] = record;
+			_data[position] = std::move(record);
 
 		} else
 		{
 			auto [ensuredData, ensuredCapacity] = 
 				AllocateEnsuredCapacity();
 
-			std::copy(
+			std::move(
 				_data,
 				_data + position,
 				ensuredData
 			);
 
-			_data[position] = record;
+			_data[position] = std::move(record);
 
-			std::copy(
+			std::move(
 				_data + position + 1, 
 				_data + _size,
 				ensuredData + position + 1
 			);
-
+			
 			delete[] _data;
 
 			_data = ensuredData;
@@ -218,9 +236,10 @@ void ArrayTable<K, V>::Remove(size_t position)
 
 	for (size_t i = position; i < _size - 1; i++)
 	{
-		_data[i] = _data[i + 1];
+		_data[i] = std::move(_data[i + 1]);
 	}
 
 	_size--;
 }
 
+//#endif
