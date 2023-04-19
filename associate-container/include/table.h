@@ -5,13 +5,13 @@
 
 #include <iostream>
 
-template<class K, class V>
+template <class K, class V>
 struct Record {
 
-	K key;
-	V value;	//value must be movable
+	K key;		//key can be movable
+	V value;	//value can be movable
 
-	Record(const K& key, V value): key(key), value(std::move(value)) {}
+	Record(K key, V value): key(std::move(key)), value(std::move(value)) {}
 	Record(): key(), value() {}
 
 	Record(const Record&) = delete;
@@ -22,7 +22,15 @@ struct Record {
 	Record& operator=(Record&&) noexcept = default;
 
 	~Record() = default;
+
+	static bool Compare(const Record& r1, const Record& r2);
 };
+
+template <class K, class V>
+bool Record<K, V>::Compare(const Record& r1, const Record& r2)
+{
+	return r1.key < r2.key;
+}
 
 
 template<class K, class V>
@@ -138,7 +146,7 @@ public:
 
 	TableIterator& operator++()
 	{
-		++_iterator;
+		_iterator->operator++();
 		return *this;
 	}
 

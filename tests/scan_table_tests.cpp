@@ -17,22 +17,6 @@ void F(ArrayTable<K, V>* table)
 	auto e = table->Find(0);
 }
 
-TEST(FAKE_TABLE, TT)
-{
-	FakeTable<int, int> f;
-	std::vector<int> v;
-	v.push_back(1);
-
-	F<int, int>(nullptr);
-
-	EXPECT_NO_THROW(f.Add(1, 1));
-
-	std::map<int, int> m;
-
-
-	auto iterator = m.find(60);
-
-}
 
 TEST(SCAN_TABLE, InitAndCheck)
 {
@@ -70,4 +54,63 @@ TEST(SCAN_TABLE, InitAndCheck)
 	 *	MAKE RECORD VALUE AS UNIQUE_PTR
 	 *	AND EVEN BETTER TO MAKE VALUE AS ANY MOVED TYPE
 	*/
+}
+
+TEST(SCAN_TABLE, CheckEnsure)
+{
+	struct Load
+	{
+
+		std::string
+			firstName,
+			lastName;
+
+		size_t age;
+
+		Load(std::string firstName, std::string lastName, size_t age)
+			: firstName(std::move(firstName)),
+			  lastName(std::move(lastName)),
+			  age(age)	{}
+
+		~Load()
+		{
+			std::cout << "Load destroyed" << std::endl;
+		}
+	};
+
+	ScanTable<int, std::unique_ptr<Load>> table(5);
+
+	table.Add(-29, std::make_unique<Load>("A1", "B", 44));
+	table.Add(-21, std::make_unique<Load>("A2", "D", 44));
+	table.Add(-255, std::make_unique<Load>("A3", "F", 44));
+	table.Add(555, std::make_unique<Load>("A4", "H", 44));
+	table.Add(5, std::make_unique<Load>("A5", "J", 4554));
+
+	table.Remove(555);
+
+	table.Add(324, std::make_unique<Load>("A6", "L", 4554));
+	table.Add(200, std::make_unique<Load>("A7", "N", 4554));
+
+	table.Remove(-29);
+
+	table.Add(250, std::make_unique<Load>("A8", "P", 4554));
+	table.Add(260, std::make_unique<Load>("A9", "R", 4554));
+
+	table.Remove(250);
+
+	auto iterator = table.Begin();
+
+	while (iterator != table.End())
+	{
+		std::cout << iterator->key << std::endl;
+		++iterator;
+	}
+
+	//EXPECT_EQ(    iterator->value->firstName, "A2");
+	//EXPECT_EQ((++iterator)->value->firstName, "A3");
+	//EXPECT_EQ((++iterator)->value->firstName, "A5");
+	//EXPECT_EQ((++iterator)->value->firstName, "A6");
+	//EXPECT_EQ((++iterator)->value->firstName, "A7");
+	//EXPECT_EQ((++iterator)->value->firstName, "A9");
+	//EXPECT_EQ((++iterator), table.End());
 }

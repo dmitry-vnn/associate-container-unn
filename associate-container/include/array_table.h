@@ -110,7 +110,7 @@ private:
 protected:
 	void PushBack(TypedRecord record);
 	void Insert(TypedRecord record, size_t position);
-	void Remove(size_t position);
+	void RemoveByPosition(size_t position);
 
 
 };
@@ -120,9 +120,9 @@ void ArrayTable<K, V>::Remove(const K& key)
 {
 	auto position = FindPosition(key);
 
-	if (position >= 0)
+	if (position != -1)
 	{
-		Remove(position);
+		RemoveByPosition(position);
 	}
 	
 }
@@ -227,13 +227,8 @@ void ArrayTable<K, V>::Insert(TypedRecord record, size_t position)
 }
 
 template <class K, class V>
-void ArrayTable<K, V>::Remove(size_t position)
+void ArrayTable<K, V>::RemoveByPosition(size_t position)
 {
-	if (position >= _size)
-	{
-		return;
-	}
-
 	for (size_t i = position; i < _size - 1; i++)
 	{
 		_data[i] = std::move(_data[i + 1]);

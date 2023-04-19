@@ -33,7 +33,14 @@ public:
 template <class K, class V>
 void ScanTable<K, V>::Add(const K& key, V value)
 {
-	base::PushBack(std::move(TypedRecord{key, value}));
+	auto position = FindPosition(key);
+	if (position == -1)
+	{
+		base::PushBack(std::move(TypedRecord{ key, std::move(value) }));
+	} else
+	{
+		base::_data[position].value = std::move(value);
+	}
 }
 
 template <class K, class V>
