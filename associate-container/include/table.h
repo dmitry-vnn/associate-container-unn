@@ -1,9 +1,7 @@
 ﻿#pragma once
 
-//#include <iterator>
-//#include <memory>
-
-#include <iostream>
+#include <iterator>
+#include <memory>
 
 template <class K, class V>
 struct Record {
@@ -14,22 +12,30 @@ struct Record {
 	Record(K key, V value): key(std::move(key)), value(std::move(value)) {}
 	Record(): key(), value() {}
 
-	Record(const Record&) = delete;
+
 	Record(Record&&) noexcept = default;
-
-
-	Record& operator=(const Record&) = delete;
 	Record& operator=(Record&&) noexcept = default;
+
+
+	Record(const Record&) = default;
+	Record& operator=(const Record&) = default;
 
 	~Record() = default;
 
 	static bool Compare(const Record& r1, const Record& r2);
+	static bool CompareKeys(const K& k1, const K& k2);
 };
 
 template <class K, class V>
 bool Record<K, V>::Compare(const Record& r1, const Record& r2)
 {
-	return r1.key < r2.key;
+	return CompareKeys(r1.key, r2.key);
+}
+
+template <class K, class V>
+bool Record<K, V>::CompareKeys(const K& k1, const K& k2)
+{
+	return k1 < k2;
 }
 
 
@@ -74,6 +80,8 @@ public:
 
 	virtual VirtualTableIterator& operator++() = 0;
 
+	virtual std::unique_ptr<VirtualTableIterator> Copy() = 0;
+
 };
 
 template<class K, class V>
@@ -90,8 +98,24 @@ public:
 		std::unique_ptr<VirtualTableIterator<K, V>> iteratorImplement
 	): _iterator(std::move(iteratorImplement)) {}
 
-	TableIterator(const TableIterator&) = delete;
-	TableIterator& operator=(const TableIterator&) = delete;
+
+	
+
+	TableIterator(const TableIterator& other)
+		: std::iterator<std::input_iterator_tag, Record<K, V>>(other),
+		  _iterator(std::move(other._iterator->Copy()))
+	{
+	}
+	
+	TableIterator& operator=(const TableIterator& other)
+	{
+		if (this == &other)
+			return *this;
+		std::iterator<std::input_iterator_tag, Record<K, V>>::operator =(other);
+		_iterator = std::move(other._iterator->Copy());
+		return *this;
+	}
+
 
 	TableIterator(TableIterator&& other) noexcept :
 
@@ -138,6 +162,7 @@ public:
 	{
 		return const_cast<const TableIterator*>(this)->operator->();
 	}
+
 	
 	const typename TableIterator::pointer operator->() const
 	{
@@ -149,8 +174,6 @@ public:
 		_iterator->operator++();
 		return *this;
 	}
-
-
 
 };
 
@@ -171,7 +194,8 @@ public:
 
 	virtual void Add(const K& key, V value) = 0;
 	virtual ConstIterator Find(const K& key) const = 0;
-	virtual void Remove(const K& key) = 0;
+	virtual ConstIterator Remove(const K& key) = 0;
+	virtual size_t Size() = 0;
 
 public:
 

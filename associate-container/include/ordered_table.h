@@ -18,9 +18,10 @@ public:
 		base(initialCapacity) {}
 
 	OrderedTable(std::initializer_list<TypedRecord> list) :
-		base(list.begin(), list.end())
+		base(list.size())
 	{
-		std::sort(base::Begin(), base::End(), TypedRecord::Compare);
+		std::move(list.begin(), list.end(), base::Begin());
+		std::sort(base::_data, base::_data + base::_size, TypedRecord::Compare);
 	}
 
 public:
@@ -36,29 +37,18 @@ template <class K, class V>
 void OrderedTable<K, V>::Add(const K& key, V value)
 {
 
-	using base::_size;
-	using base::_data;
-	using base::_capacity;
+	auto& pair = BinarySearchRecord(key);
 
-	auto
-		[isFound,
-		position] =
-
-		BinarySearchRecord(key);
+	auto isFound = pair.first;
+	auto position = pair.second;
 
 	if (isFound)
 	{
-		_data[position].value = std::move(value);
+		base::_data[position].value = std::move(value);
 		return;
 	}
 
 	auto record = TypedRecord(key, std::move(value));
-
-	if (_size == 0)
-	{
-		base::PushBack(std::move(record));
-		return;
-	}
 	
 	base::Insert(std::move(record), position);
 		
@@ -67,11 +57,10 @@ void OrderedTable<K, V>::Add(const K& key, V value)
 template <class K, class V>
 int OrderedTable<K, V>::FindPosition(const K& key) const
 {
-	auto
-		[isFound,
-		position] = 
-		
-		BinarySearchRecord(key);
+	auto& pair = BinarySearchRecord(key);
+
+	auto isFound = pair.first;
+	auto position = pair.second;
 
 	return isFound ? position : -1;
 
@@ -80,30 +69,28 @@ int OrderedTable<K, V>::FindPosition(const K& key) const
 template <class K, class V>
 std::pair<bool, size_t> OrderedTable<K, V>::BinarySearchRecord(const K& key) const
 {
-	using base::_size;
-	using base::_data;
 
-
-	if (_size == 0)
+	if (base::_size == 0)
 	{
 		return { false, 0 };
 	}
 
-	size_t first = 0;
-	size_t last = _size - 1;
+	int first = 0;
+	int last = base::_size - 1;
 
-	while (first > last)
+	while (first <= last)
 	{
 		size_t mid = (first + last) / 2;
 
-		auto& currentKey = _data[mid].key;
+		auto& currentRecord = base::_data[mid];
+		auto& currentKey = currentRecord.key;
 
 		if (currentKey == key)
 		{
 			return { true, mid };
 		}
 
-		if (TypedRecord::Compare(currentKey, key))
+		if (TypedRecord::CompareKeys(currentKey, key))
 		{
 			last = mid - 1;
 		} else

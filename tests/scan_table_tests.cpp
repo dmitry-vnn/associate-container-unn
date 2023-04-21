@@ -90,27 +90,36 @@ TEST(SCAN_TABLE, CheckEnsure)
 
 	table.Add(324, std::make_unique<Load>("A6", "L", 4554));
 	table.Add(200, std::make_unique<Load>("A7", "N", 4554));
-
+	
 	table.Remove(-29);
-
+	
 	table.Add(250, std::make_unique<Load>("A8", "P", 4554));
 	table.Add(260, std::make_unique<Load>("A9", "R", 4554));
-
+	
 	table.Remove(250);
 
 	auto iterator = table.Begin();
 
+	//while (iterator != table.End())
+	//{
+	//	std::cout << iterator->key << std::endl;
+	//	++iterator;
+	//}
+
+	EXPECT_EQ(    iterator->value->firstName, "A2");
+	EXPECT_EQ((++iterator)->value->firstName, "A3");
+	EXPECT_EQ((++iterator)->value->firstName, "A5");
+	EXPECT_EQ((++iterator)->value->firstName, "A6");
+	EXPECT_EQ((++iterator)->value->firstName, "A7");
+	EXPECT_EQ((++iterator)->value->firstName, "A9");
+	EXPECT_EQ((++iterator), table.End());
+
+	iterator = table.Begin();
+
 	while (iterator != table.End())
 	{
-		std::cout << iterator->key << std::endl;
-		++iterator;
+		table.Remove(iterator->key);
 	}
 
-	//EXPECT_EQ(    iterator->value->firstName, "A2");
-	//EXPECT_EQ((++iterator)->value->firstName, "A3");
-	//EXPECT_EQ((++iterator)->value->firstName, "A5");
-	//EXPECT_EQ((++iterator)->value->firstName, "A6");
-	//EXPECT_EQ((++iterator)->value->firstName, "A7");
-	//EXPECT_EQ((++iterator)->value->firstName, "A9");
-	//EXPECT_EQ((++iterator), table.End());
+	EXPECT_EQ(table.Size(), 0);
 }
