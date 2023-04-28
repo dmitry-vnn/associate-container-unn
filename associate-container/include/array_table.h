@@ -12,23 +12,47 @@ class ArrayTableIterator final : public VirtualTableIterator<K, V>
 
 private:
 	using base = VirtualTableIterator<K, V>;
+	using TypedRecord = Record<K, V>;
+
+private:
+	TypedRecord* _currentRecord;
+
 
 public:
-	explicit ArrayTableIterator(typename base::RecordPointer currentRecord):
-		VirtualTableIterator<K, V>(currentRecord) {}
+	explicit ArrayTableIterator(TypedRecord* currentRecord):
+		base(), _currentRecord(currentRecord) {}
 
+public:
 	ArrayTableIterator& operator++() override
 	{
 		//Increment the record pointer (pointer arithmetic)
-		++base::_currentRecord;
+		++_currentRecord;
 
 		return *this;
+	}
+
+	bool operator!=(const VirtualTableIterator<K, V>& other) const override
+	{
+		return !operator==(other);
+	}
+
+	bool operator==(const VirtualTableIterator<K, V>& other) const override
+	{
+		auto otherArrayTableIterator = dynamic_cast<const ArrayTableIterator*>(&other);
+		return
+			otherArrayTableIterator != nullptr &&
+			_currentRecord == otherArrayTableIterator->_currentRecord;
+	}
+
+	Record<K, V>& operator*() const override
+	{
+		return *_currentRecord;
 	}
 
 	std::unique_ptr<base> Copy() override;
 
 
-	static TableIterator<K, V> Create(typename base::RecordPointer currentRecord)
+	static TableIterator<K, V> Create(TypedRecord* currentRecord)
 	{
 		return TableIterator<K, V>(std::move(std::make_unique<ArrayTableIterator>(currentRecord)));
 	}
@@ -127,7 +151,7 @@ protected:
 template <class K, class V>
 std::unique_ptr<VirtualTableIterator<K, V>> ArrayTableIterator<K, V>::Copy()
 {
-	return std::make_unique<ArrayTableIterator>(VirtualTableIterator<K, V>::_currentRecord);
+	return std::make_unique<ArrayTableIterator>(_currentRecord);
 }
 
 template <class K, class V>

@@ -45,38 +45,33 @@ class TableIterator;
 template<class K, class V>
 class VirtualTableIterator {
 
-	friend class TableIterator<K, V>;
+	//friend class TableIterator<K, V>;
 
 public:
 
-	using TypedRecord = Record<K, V>;
-	using RecordPointer = TypedRecord*;
-	using RecordReference = TypedRecord&;
+	//using TypedRecord = Record<K, V>;
+	//using RecordPointer = TypedRecord*;
+	//using RecordReference = TypedRecord&;
 
 protected:
 
-	RecordPointer _currentRecord;
-	explicit VirtualTableIterator(RecordPointer currentRecord) : _currentRecord(currentRecord) {}
+	/*RecordPointer _currentRecord;
+	explicit VirtualTableIterator(RecordPointer currentRecord):
+		_currentRecord(currentRecord) {} */
 
 public:
-
+	VirtualTableIterator() = default;
 	virtual ~VirtualTableIterator() = default;
 
 	VirtualTableIterator(const VirtualTableIterator&) = default;
 	VirtualTableIterator& operator=(const VirtualTableIterator&) = default;
 
 public:
-	virtual bool operator!=(const VirtualTableIterator& other) const
-	{
-		return !operator==(other);
-	}
+	virtual bool operator!=(const VirtualTableIterator& other) const = 0;
 
-	virtual bool operator==(const VirtualTableIterator& other) const
-	{
-		return _currentRecord == other._currentRecord;
-	}
+	virtual bool operator==(const VirtualTableIterator& other) const = 0;
 
-	virtual RecordReference operator*() const { return *_currentRecord; }
+	virtual Record<K, V>& operator*() const = 0;
 
 	virtual VirtualTableIterator& operator++() = 0;
 
@@ -133,7 +128,7 @@ public:
 		if (this == &other)
 			return *this;
 
-		base::operator=(std::move(other));
+		base::operator=(other);
 
 		_iterator = std::move(other._iterator);
 		return *this;
@@ -155,7 +150,7 @@ public:
 
 	typename TableIterator::reference operator*() const
 	{
-		return _iterator.get()->operator*();
+		return _iterator->operator*();
 	}
 
 	typename TableIterator::pointer operator->()
@@ -164,9 +159,9 @@ public:
 	}
 
 	
-	const typename TableIterator::pointer operator->() const
+	const typename TableIterator::pointer operator->() const 
 	{
-		return _iterator->_currentRecord;
+		return &operator*();
 	}
 
 	TableIterator& operator++()

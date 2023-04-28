@@ -17,13 +17,12 @@ class HashTableIterator: VirtualTableIterator<K, V>
 {
 public:
 
-
-
 	explicit HashTableIterator(Node<K, V>* node):
 			VirtualTableIterator<K, V>(node->record) {}
 
-	VirtualTableIterator<K, V>& operator++() override;
-	std::unique_ptr<VirtualTableIterator<K, V>> Copy() override;
+	bool operator!=(const VirtualTableIterator<K, V>& other) const override;
+	bool operator==(const VirtualTableIterator<K, V>& other) const override;
+	Record<K, V>& operator*() const override;
 };
 
 template <class K, class V>
