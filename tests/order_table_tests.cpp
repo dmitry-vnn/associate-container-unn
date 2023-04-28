@@ -5,6 +5,7 @@
 
 TEST(order_table_tests, init)
 {
+
 	OrderedTable<char, int> t1;
 
 	t1.Add('a', 5);
