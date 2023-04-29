@@ -77,11 +77,18 @@ std::unique_ptr<VirtualTableIterator<K, V>> HashTableIterator<K, V>::Copy()
 	return std::make_unique<HashTableIterator>(_currentNode);
 }
 
-template<class K, class V, class >
+template<class K, class V> 
 class HashTable final : public Table<K, V>
 {
+
 private:
 	using TypedNode = Node<K, V>;
+	using TypedRecord = Record<K, V>;
+
+private:
+	using HashCodeFunction = size_t(*)(K); //hash function signature (function ptr)
+
+	HashCodeFunction _hashCodeFunction;
 
 private:
 	size_t _elementsCount;
@@ -93,22 +100,32 @@ private:
 	double _loadFactor;
 
 public:
-	explicit HashTable(size_t size, double loadFactor = 0.75) :
-		_elementsCount(0), _size(size), _data(new TypedNode[size]),
-		_loadFactor(loadFactor)
+	explicit HashTable(
+		size_t size, 
+		double loadFactor = 0.75,
+		HashCodeFunction hashCodeFunction = std::hash<K>()
+	):
+		_hashCodeFunction(hashCodeFunction), _elementsCount(0), _size(size),
+		_data(new TypedNode[size]), _loadFactor(loadFactor)
 	{}
 
 	void Add(const K& key, V value) override;
-	Table<K, V>::ConstIterator Find(const K& key) const override;
-	Table<K, V>::ConstIterator Remove(const K& key) override;
+
+	typename Table<K, V>::ConstIterator Find(const K& key) const override;
+	typename Table<K, V>::ConstIterator Remove(const K& key) override;
+
 	size_t Size() override;
-	Table<K, V>::Iterator Begin() override;
-	Table<K, V>::Iterator End() override;
-	Table<K, V>::ConstIterator Begin() const override;
-	Table<K, V>::ConstIterator End() const override;
+
+	typename Table<K, V>::Iterator Begin() override;
+	typename Table<K, V>::Iterator End() override;
+	typename Table<K, V>::ConstIterator Begin() const override;
+	typename Table<K, V>::ConstIterator End() const override;
 
 private:
-	bool NeedRehashing();
+
+	size_t Hash(const K& key) const;
+
+	bool NeedRehashing() const;
 	void IncreaseAndRehashData();
 };
 
@@ -119,6 +136,52 @@ void HashTable<K, V>::Add(const K& key, V value)
 	{
 		IncreaseAndRehashData();
 	}
+
+	size_t position = Hash(key);
+
+	auto* currentNode = _data + position;
+
+	if (currentNode->record == nullptr)
+	{
+		currentNode->record = std::move(TypedRecord(key, std::move(value)));
+	} else
+	{
+		//auto* previousNode = currentNode;
+
+		bool isKeyExists = false;
+
+		do
+		{
+			if (currentNode->record->key == key)
+			{
+				isKeyExists = true;
+
+				//key exists, overwrite value with a new one
+				currentNode->record->value = std::move(value);
+				break;
+			}
+
+			//previousNode = currentNode;
+			auto* nextNode = currentNode->nextNode;
+
+			if (nextNode == nullptr)
+			{
+				break;
+			}
+
+			currentNode = nextNode;
+
+		} while (true);
+
+		if (isKeyExists)
+		{
+			return;
+		}
+	}
+
+	currentNode->nextNode = new TypedNode(
+		new TypedRecord(key, std::move(value))
+	);
 }
 
 template <class K, class V>
@@ -131,7 +194,13 @@ void HashTable<K, V>::IncreaseAndRehashData()
 }
 
 template <class K, class V>
-bool HashTable<K, V>::NeedRehashing()
+size_t HashTable<K, V>::Hash(const K& key) const
+{
+	return HashCodeFunction(key) % _size;
+}
+
+template <class K, class V>
+bool HashTable<K, V>::NeedRehashing() const
 {
 	return _loadFactor * _size <= _elementsCount;
 }
