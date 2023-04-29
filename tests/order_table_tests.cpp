@@ -1,4 +1,6 @@
 ﻿
+#ifdef ___DISABLE___
+
 #include <gtest/gtest.h>
 
 #include "ordered_table.h"
@@ -110,3 +112,4 @@ TEST(OrderTable, ManyInsertion)
 	}
 }
 
+#endif

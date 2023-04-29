@@ -1,5 +1,4 @@
 #include <gtest/gtest.h>
-#include <unordered_map>
 
 template<class T>
 size_t HashCode(const T& object)
@@ -9,7 +8,6 @@ size_t HashCode(const T& object)
 
 TEST(hash, test)
 {
-	std::unordered_map<int, int>();
 	int* arr = new int[4];
 
 	EXPECT_EQ(

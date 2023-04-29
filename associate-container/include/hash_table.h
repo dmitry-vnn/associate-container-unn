@@ -1,5 +1,7 @@
 ﻿#pragma once
 
+#include <functional>
+
 #include "table.h"
 #include <iostream>
 
@@ -9,12 +11,12 @@ struct Node
 	Record<K, V>* record;
 	Node* nextNode;
 
-	Node(Record<K, V>* record, Node* nextNode = nullptr):
+	Node(Record<K, V>* record = nullptr, Node* nextNode = nullptr):
 		record(record), nextNode(nextNode) {}
 };
 
 template<class K, class V>
-class HashTableIterator: VirtualTableIterator<K, V>
+class HashTableIterator: public VirtualTableIterator<K, V>
 {
 private:
 	using base = VirtualTableIterator<K, V>;
@@ -54,17 +56,17 @@ public:
 
 	Record<K, V>& operator*() const override
 	{
-		return _currentNodeByDepth->record;
+		return *_currentNodeByDepth->record;
 	}
 
 	VirtualTableIterator<K, V>& operator++() override;
 	std::unique_ptr<VirtualTableIterator<K, V>> Copy() override;
 
-	template<class ...ArgTypes>
-	static TableIterator<K, V> Create(ArgTypes&&... args)
+	template<class... Args>
+	static TableIterator<K, V> Create(Args&&... args)
 	{
 		return TableIterator<K, V>(std::move(std::make_unique<HashTableIterator>(
-			std::forward<ArgTypes>(args))
+			std::forward<Args>(args)...)
 		));
 	}
 };
@@ -109,7 +111,8 @@ private:
 	using TypedRecord = Record<K, V>;
 
 private:
-	using HashCodeFunction = size_t(*)(K); //hash function signature (function ptr)
+	//hash function: K -> size_t
+	using HashCodeFunction = std::function<size_t(K)>;
 
 	HashCodeFunction _hashCodeFunction;
 
@@ -124,7 +127,7 @@ private:
 
 public:
 	explicit HashTable(
-		size_t size, 
+		size_t size,
 		double loadFactor = 0.75,
 		HashCodeFunction hashCodeFunction = std::hash<K>()
 	):
@@ -175,16 +178,14 @@ private:
 template <class K, class V>
 HashTable<K, V>::~HashTable()
 {
-	for (size_t i = 0; i < _elementsCount; i++)
+	for (size_t i = 0; i < _size; i++)
 	{
 		auto* node = _data + i;
 
-		if (node->record != nullptr)
+		delete node->record;
+
+		if (node->nextNode != nullptr)
 		{
-			delete[] node->record;
-		} else
-		{
-			
 			node = node->nextNode;
 
 			while (node != nullptr)
@@ -218,12 +219,12 @@ void HashTable<K, V>::Add(const K& key, V value)
 
 	if (currentNode->record == nullptr)
 	{
-		currentNode->record = std::move(TypedRecord(key, std::move(value)));
+		currentNode->record = new TypedRecord(key, std::move(value));
+		_elementsCount++;
 	} else
 	{
-		//auto* previousNode = currentNode;
-
 		bool isKeyExists = false;
+		//auto* previousNode = currentNode;
 
 		do
 		{
@@ -248,15 +249,18 @@ void HashTable<K, V>::Add(const K& key, V value)
 
 		} while (true);
 
-		if (isKeyExists)
+		if (!isKeyExists)
 		{
-			return;
+			currentNode->nextNode = new TypedNode(
+				new TypedRecord(key, std::move(value))
+			);
+
+			_elementsCount++;
 		}
+
 	}
 
-	currentNode->nextNode = new TypedNode(
-		new TypedRecord(key, std::move(value))
-	);
+
 }
 
 template <class K, class V>
@@ -373,12 +377,14 @@ void HashTable<K, V>::Print() const
 			while (node != nullptr)
 			{
 				std::cout
-					<< "  (" << node->record->key
+					<< " (" << node->record->key
 					<< " -> " << node->record->value
-					<< ")" << std::endl;
+					<< ")" << ",";
 
 				node = node->nextNode;
 			}
+
+			std::cout << " ";
 		}
 
 		std::cout << "]";
@@ -390,6 +396,8 @@ void HashTable<K, V>::Print() const
 
 		std::cout << std::endl;
 	}
+
+	std::cout << "]" << std::endl;
 }
 
 template <class K, class V>
@@ -450,11 +458,12 @@ std::tuple<Node<K, V>*, Node<K, V>*, Node<K, V>*> HashTable<K, V>::FindNode(cons
 template <class K, class V>
 size_t HashTable<K, V>::Hash(const K& key) const
 {
-	return HashCodeFunction(key) % _size;
+	return _hashCodeFunction(key) % _size;
 }
 
 template <class K, class V>
 bool HashTable<K, V>::NeedRehashing() const
 {
-	return _loadFactor * _size <= _elementsCount;
+	//return _loadFactor * _size <= _elementsCount;
+	return false;
 }

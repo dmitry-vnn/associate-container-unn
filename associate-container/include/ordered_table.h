@@ -37,7 +37,7 @@ template <class K, class V>
 void OrderedTable<K, V>::Add(const K& key, V value)
 {
 
-	auto& pair = BinarySearchRecord(key);
+	auto pair = BinarySearchRecord(key);
 
 	auto isFound = pair.first;
 	auto position = pair.second;
@@ -57,7 +57,7 @@ void OrderedTable<K, V>::Add(const K& key, V value)
 template <class K, class V>
 int OrderedTable<K, V>::FindPosition(const K& key) const
 {
-	auto& pair = BinarySearchRecord(key);
+	auto pair = BinarySearchRecord(key);
 
 	auto isFound = pair.first;
 	auto position = pair.second;

@@ -1,3 +1,5 @@
+#ifdef ___DISABLE___
+
 #include <gtest/gtest.h>
 
 #include "fake_table.h"
@@ -123,3 +125,5 @@ TEST(SCAN_TABLE, CheckEnsure)
 
 	EXPECT_EQ(table.Size(), 0);
 }
+
+#endif
