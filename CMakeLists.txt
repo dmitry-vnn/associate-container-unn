@@ -4,7 +4,7 @@ project ("associate-container-unn")
 
 add_subdirectory ("associate-container")
 
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 20)
 
 
 #======================= ADD GOOOGLE TEST LIB SUPPORT ========================
