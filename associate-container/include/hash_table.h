@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include "table.h"
+#include <iostream>
 
 template<class K, class V>
 struct Node
@@ -131,38 +132,24 @@ public:
 		_data(new TypedNode[size]), _loadFactor(loadFactor)
 	{}
 
-	void Add(const K& key, V value) override;
+	~HashTable() override;
 
+public:
+
+	void Add(const K& key, V value) override;
 	typename Table<K, V>::ConstIterator Find(const K& key) const override;
 	typename Table<K, V>::ConstIterator Remove(const K& key) override;
 
 	size_t Size() override { return _elementsCount; }
 
-	typename Table<K, V>::Iterator Begin() override
-	{
-		return static_cast<const HashTable*>(this)->Begin();
-	}
-	typename Table<K, V>::Iterator End() override
-	{
-		return static_cast<const HashTable*>(this)->End();
-	}
+	typename Table<K, V>::Iterator Begin() override;
+	typename Table<K, V>::Iterator End() override;
 
-	typename Table<K, V>::ConstIterator Begin() const override
-	{
-		auto iterator = Iterator::Create(_data, _data, EndNode());
+	typename Table<K, V>::ConstIterator Begin() const override;
+	typename Table<K, V>::ConstIterator End() const override;
 
-		if (_data[0].record == nullptr)
-		{
-			return ++iterator;
-		}
 
-		return iterator;
-	}
-
-	typename Table<K, V>::ConstIterator End() const override
-	{
-		return Iterator::Create(EndNode(), EndNode(), EndNode());
-	}
+	void Print() const;
 
 private:
 
@@ -184,6 +171,37 @@ private:
 		return _data + _elementsCount;
 	}
 };
+
+template <class K, class V>
+HashTable<K, V>::~HashTable()
+{
+	for (size_t i = 0; i < _elementsCount; i++)
+	{
+		auto* node = _data + i;
+
+		if (node->record != nullptr)
+		{
+			delete[] node->record;
+		} else
+		{
+			
+			node = node->nextNode;
+
+			while (node != nullptr)
+			{
+				auto* nextNode = node->nextNode;
+
+				delete node->record;
+				delete node;
+
+				node = nextNode;
+			}
+		}
+
+	}
+
+	delete[] _data;
+}
 
 template <class K, class V>
 void HashTable<K, V>::Add(const K& key, V value)
@@ -309,12 +327,79 @@ typename Table<K, V>::ConstIterator HashTable<K, V>::Remove(const K& key)
 }
 
 template <class K, class V>
+typename Table<K, V>::Iterator HashTable<K, V>::Begin()
+{
+	return static_cast<const HashTable*>(this)->Begin();
+}
+
+template <class K, class V>
+typename Table<K, V>::Iterator HashTable<K, V>::End()
+{
+	return static_cast<const HashTable*>(this)->End();
+}
+
+template <class K, class V>
+typename Table<K, V>::ConstIterator HashTable<K, V>::Begin() const
+{
+	auto iterator = Iterator::Create(_data, _data, EndNode());
+
+	if (_data[0].record == nullptr)
+	{
+		return ++iterator;
+	}
+
+	return iterator;
+}
+
+template <class K, class V>
+typename Table<K, V>::ConstIterator HashTable<K, V>::End() const
+{
+	return Iterator::Create(EndNode(), EndNode(), EndNode());
+}
+
+template <class K, class V>
+void HashTable<K, V>::Print() const
+{
+	std::cout << "[" << std::endl;
+
+	for (size_t i = 0; i < _size; i++)
+	{
+		std::cout << " [";
+
+		auto* node = _data + i;
+
+		if (node->record != nullptr)
+		{
+			while (node != nullptr)
+			{
+				std::cout
+					<< "  (" << node->record->key
+					<< " -> " << node->record->value
+					<< ")" << std::endl;
+
+				node = node->nextNode;
+			}
+		}
+
+		std::cout << "]";
+
+		if (i < _size - 1)
+		{
+			std::cout << ",";
+		}
+
+		std::cout << std::endl;
+	}
+}
+
+template <class K, class V>
 void HashTable<K, V>::IncreaseAndRehashData()
 {
-	auto increasedSize = _size * 2;
-	auto* increasedData = new TypedNode[increasedSize];
+	//auto increasedSize = _size * 2;
+	//auto* increasedData = new TypedNode[increasedSize];
 
 	//TODO rehashing...
+	throw std::logic_error("Not implemented yet");
 }
 
 template <class K, class V>
