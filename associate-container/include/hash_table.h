@@ -445,6 +445,7 @@ std::tuple<Node<K, V>*, Node<K, V>*, Node<K, V>*> HashTable<K, V>::FindNode(cons
 			else
 			{
 				isKeyFound = true;
+				break;
 			}
 		}
 
