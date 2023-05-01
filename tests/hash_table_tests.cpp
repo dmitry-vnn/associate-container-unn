@@ -43,6 +43,15 @@ TEST(HashTable, init_and_print)
 		std::cout << iterator->key << " -> " << iterator->value << std::endl;
 		++iterator;
 	}
+
+	iterator = table.Begin();
+
+	while (iterator != table.End())
+	{
+		iterator = table.Remove(iterator->key);
+	}
+
+	EXPECT_EQ(table.Size(), 0);
 	
 
 }

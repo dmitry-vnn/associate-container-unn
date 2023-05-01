@@ -287,8 +287,11 @@ typename Table<K, V>::ConstIterator HashTable<K, V>::Remove(const K& key)
 		return End();
 	}
 
+	_elementsCount--;
+
 	TypedNode* previousDepthNode = std::get<1>(tuple);
 	TypedNode* currentDepthNode = std::get<2>(tuple);
+
 
 	if (memoryOffsetNode == currentDepthNode)
 	{
