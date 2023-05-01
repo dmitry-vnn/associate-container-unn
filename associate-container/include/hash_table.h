@@ -171,7 +171,7 @@ private:
 
 	TypedNode* EndNode() const
 	{
-		return _data + _elementsCount;
+		return _data + _size;
 	}
 };
 

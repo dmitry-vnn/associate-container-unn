@@ -36,19 +36,13 @@ TEST(HashTable, init_and_print)
 
 	std::cout << std::endl;
 
-	//auto iterator = table.Begin();
+	auto iterator = table.Begin();
 
-	//while (iterator != table.End())
-	//{
-	//	std::cout << iterator->key << " -> " << iterator->value << std::endl;
-	//
-	//	if (iterator->key == 999)
-	//	{
-	//		std::cout << "";
-	//	}
-	//	++iterator;
-	//}
-
+	while (iterator != table.End())
+	{
+		std::cout << iterator->key << " -> " << iterator->value << std::endl;
+		++iterator;
+	}
 	
 
 }
