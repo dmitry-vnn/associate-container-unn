@@ -3,6 +3,7 @@
 project ("associate-container-unn")
 
 add_subdirectory ("associate-container")
+add_subdirectory ("text-parser")
 
 set(CMAKE_CXX_STANDARD 20)
 
