@@ -50,8 +50,10 @@ public:
 		auto* otherHashTableIterator =
 			dynamic_cast<const HashTableIterator*>(&other);
 
-		return otherHashTableIterator != nullptr
+		auto result = otherHashTableIterator != nullptr
 			&& _currentNodeByDepth == otherHashTableIterator->_currentNodeByDepth;
+
+		return result;
 	}
 
 	Record<K, V>& operator*() const override
@@ -326,9 +328,11 @@ typename Table<K, V>::ConstIterator HashTable<K, V>::Remove(const K& key)
 	delete currentDepthNode->record;
 	delete currentDepthNode;
 
+	auto* endNode = EndNode();
+
 	return Iterator::Create(
 		memoryOffsetNode, 
-		previousDepthNode->nextNode,
+		previousDepthNode->nextNode != nullptr ? previousDepthNode->nextNode : EndNode(),
 		EndNode()
 	);
 }
@@ -433,7 +437,7 @@ std::tuple<Node<K, V>*, Node<K, V>*, Node<K, V>*> HashTable<K, V>::FindNode(cons
 			{
 
 				previousDepthNode = depthNode;
-				depthNode = _data->nextNode;
+				depthNode = depthNode->nextNode;
 
 				if (depthNode == nullptr)
 				{
