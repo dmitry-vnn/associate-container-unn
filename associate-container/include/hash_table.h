@@ -328,11 +328,20 @@ typename Table<K, V>::ConstIterator HashTable<K, V>::Remove(const K& key)
 	delete currentDepthNode->record;
 	delete currentDepthNode;
 
-	auto* endNode = EndNode();
 
-	return Iterator::Create(
-		memoryOffsetNode, 
-		previousDepthNode->nextNode != nullptr ? previousDepthNode->nextNode : EndNode(),
+	auto* nextNode = previousDepthNode->nextNode;
+
+	if (nextNode != nullptr)
+	{
+		return Iterator::Create(
+			memoryOffsetNode,
+			nextNode,
+			EndNode());
+	} 
+
+	return ++Iterator::Create(
+		memoryOffsetNode,
+		previousDepthNode,
 		EndNode()
 	);
 }

@@ -115,13 +115,8 @@ TEST(HashTable, remove_first_element_from_chains)
 	EXPECT_EQ(table.Find(v[3]), table.Remove(v[2]));
 	EXPECT_EQ(table.Find(v[6]), table.Remove(v[3]));
 	EXPECT_EQ(table.Find(v[5]), table.Remove(v[6]));
-
-	table.Print();
-
-	auto i1 = table.Remove(v[10]);
-	auto i2 = table.End();
-	EXPECT_EQ(i1, i2);
-	//EXPECT_EQ(table.Find(v[9]), table.Remove(v[5]));
+	EXPECT_EQ(table.End(), table.Remove(v[10]));
+	EXPECT_EQ(table.Find(v[9]), table.Remove(v[5]));
 
 	table.Print();
 }
