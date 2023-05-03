@@ -120,3 +120,23 @@ TEST(HashTable, remove_first_element_from_chains)
 
 	table.Print();
 }
+
+TEST(HashTable, table_increase)
+{
+	HashTable<int, int, true> table(3);
+
+	table.Add(100, 0);
+	table.Add(-100, 0);
+	table.Add(50, 0);
+	table.Add(-50, 0);
+	table.Add(25, 0);
+	table.Add(-25, 0);
+	table.Add(12, 0);
+	table.Add(-12, 0);
+	table.Add(6, 0);
+	table.Add(-6, 0);
+	table.Add(4, 0);
+	table.Add(-4, 0);
+
+	table.Print();
+}
