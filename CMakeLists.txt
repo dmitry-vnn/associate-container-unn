@@ -39,7 +39,8 @@ target_link_libraries(						#Connect libraries
   run_all_tests								
 
   GTest::gtest_main							#Google test library
-  associate-container						#Associate container headers
+  associate-container						#Associate container lib
+  text-parser						        #Text parser lib
 )
 
 include(GoogleTest)							#Include GoogleTest module
