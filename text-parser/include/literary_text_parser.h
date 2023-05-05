@@ -16,9 +16,15 @@ private:
 
 public:
 	LiteraryTextParser(std::string filePath, WordHandler wordHandler);
-	~LiteraryTextParser();
 
 
 public:
+	~LiteraryTextParser();
+
+	LiteraryTextParser(const LiteraryTextParser& other) = delete;
+	LiteraryTextParser(LiteraryTextParser&& other) noexcept = delete;
+	LiteraryTextParser& operator=(const LiteraryTextParser& other) = delete;
+	LiteraryTextParser& operator=(LiteraryTextParser&& other) noexcept = delete;
+
 	void Parse() const { _parser->Parse(); }
 };
