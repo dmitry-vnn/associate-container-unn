@@ -26,5 +26,6 @@ public:
 	LiteraryTextParser& operator=(const LiteraryTextParser& other) = delete;
 	LiteraryTextParser& operator=(LiteraryTextParser&& other) noexcept = delete;
 
+public:
 	void Parse() const { _parser->Parse(); }
 };

@@ -13,9 +13,9 @@ LiteraryTextParser::LiteraryTextParser(std::string filePath, WordHandler wordHan
 			|| c >= L'0' && c <= L'9';
 	};
 
-	std::vector<auto> splitters = {L' '};
+	std::vector<wchar_t> splitters = {L' '};
 
-	_parser = new auto(
+	_parser = new TextWordParser(
 		std::move(filePath), std::move(charFilter),
 		std::move(wordHandler), std::move(splitters)
 	);
