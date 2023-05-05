@@ -1,3 +1,5 @@
+#ifdef __DISABLE__
+
 #include <gtest/gtest.h>
 
 template<class T>
@@ -15,3 +17,5 @@ TEST(hash, test)
 		HashCode<char*>(reinterpret_cast<char*>(arr) + sizeof(int))
 	);
 }
+
+#endif

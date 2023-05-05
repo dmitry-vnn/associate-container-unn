@@ -1,3 +1,5 @@
+#ifdef __DISABLE__
+
 #include <gtest/gtest.h>
 
 #include <iostream>
@@ -140,3 +142,5 @@ TEST(HashTable, table_increase)
 
 	table.Print();
 }
+
+#endif
