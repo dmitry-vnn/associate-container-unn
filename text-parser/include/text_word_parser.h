@@ -32,9 +32,11 @@ public:
 		_wordSplitters(std::move(wordSplitters)),
 		_charFilter(std::move(charFilter)),
 		_wordHandler(std::move(wordHandler))
-	{ Parse(); }
+	{ }
+
+public:
+	void Parse() const;
 
 private:
 	bool IsSplitter(wchar_t c) const;
-	void Parse() const;
 };
