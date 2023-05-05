@@ -34,7 +34,18 @@ public:
 		_wordHandler(std::move(wordHandler))
 	{ }
 
+
 public:
+
+	~TextWordParser() = default;
+
+	TextWordParser(const TextWordParser& other) = delete;
+	TextWordParser(TextWordParser&& other) noexcept = delete;
+	TextWordParser& operator=(const TextWordParser& other) = delete;
+	TextWordParser& operator=(TextWordParser&& other) noexcept = delete;
+
+public:
+
 	void Parse() const;
 
 private:
