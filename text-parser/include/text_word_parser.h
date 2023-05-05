@@ -6,8 +6,8 @@
 
 class TextWordParser
 {
-	
-private:
+
+public:
 	using WordHandler = std::function<void(std::wstring)>;
 	using CharPredicate = std::function<bool(wchar_t)>;
 
