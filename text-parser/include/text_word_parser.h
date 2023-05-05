@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <functional>
+#include <vector>
 
 class TextWordParser
 {
@@ -13,7 +14,7 @@ private:
 private:
 	std::string _filePath;
 
-	wchar_t _wordSplitter;
+	std::vector<wchar_t> _wordSplitters;
 
 	CharPredicate _charFilter;
 	WordHandler _wordHandler;
@@ -24,15 +25,16 @@ public:
 		std::string filePath,
 		CharPredicate charFilter,
 		WordHandler wordHandler,
-		wchar_t wordSplitter
+		std::vector<wchar_t> wordSplitters
 
 	):
 		_filePath(std::move(filePath)),
-		_wordSplitter(wordSplitter),
+		_wordSplitters(std::move(wordSplitters)),
 		_charFilter(std::move(charFilter)),
 		_wordHandler(std::move(wordHandler))
 	{ Parse(); }
 
 private:
+	bool IsSplitter(wchar_t c) const;
 	void Parse() const;
 };

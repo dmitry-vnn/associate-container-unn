@@ -1,14 +1,12 @@
 ﻿#include "text_word_parser.h"
 
+#include <codecvt>
 #include <fstream>
 #include <string>
 
-std::wstring SelectWordFromLineBySplitterBound(const std::wstring& line, int splitterStartIndex, int splitterEndIndex)
+std::wstring SelectWordFromLineBySplitterBound(const std::wstring& line, int wordStartIndex, int wordEndIndex)
 {
-	int wordStartIndex = splitterStartIndex + 1;
-	int wordEndIndex = splitterEndIndex - 1;
-
-	if (wordStartIndex >= wordEndIndex)
+	if (wordStartIndex >= 0 && wordEndIndex >= wordStartIndex)
 	{
 		return line.substr(wordStartIndex,
 			wordEndIndex - wordStartIndex + 1
@@ -19,37 +17,54 @@ std::wstring SelectWordFromLineBySplitterBound(const std::wstring& line, int spl
 }
 
 
+bool TextWordParser::IsSplitter(wchar_t c) const
+{
+	return
+		std::find(
+			_wordSplitters.begin(),
+			_wordSplitters.end(),
+			c
+		) != _wordSplitters.end();
+}
+
 void TextWordParser::Parse() const
 {
-	std::wifstream stream(_filePath);
+	std::wifstream wif(_filePath);
+
+	if (!wif.is_open())
+	{
+		throw std::logic_error("File not found!");
+	}
+
+	wif.imbue(
+		std::locale(std::locale::empty(), 
+			new std::codecvt_utf8<wchar_t>)
+	);
 
 	std::wstring line;
 
-	while (std::getline(stream, line))
+	while (std::getline(wif, line))
 	{
-		int splitterStartIndex = -1;
-		int splitterEndIndex = -1;
+		int wordStartIndex = -1;
 
-		for (size_t i = 0; i < line.size(); i++)
+		for (int i = 0; i < line.size(); i++)
 		{
 			wchar_t c = line[i];
 
-			if (c == _wordSplitter)
-			{
-				if (splitterStartIndex == -1)
-				{
-					splitterStartIndex = i;
-				} else if (splitterEndIndex == -1)
-				{
-					splitterEndIndex = i;
-				} else
-				{
-					auto str = SelectWordFromLineBySplitterBound(
-						line,
-						splitterStartIndex,
-						splitterEndIndex
-					);
+			bool isLastCharInLine = i == static_cast<int>(line.size()) - 1;
 
+			if (isLastCharInLine || IsSplitter(c))
+			{
+				int wordEndIndex = i - (isLastCharInLine ? 0 : 1);
+
+				auto str = SelectWordFromLineBySplitterBound(
+					line,
+					wordStartIndex,
+					wordEndIndex
+				);
+
+				if (!str.empty())
+				{
 					auto* buffer = new wchar_t[str.size() + 1];
 					size_t index = 0;
 
@@ -63,12 +78,21 @@ void TextWordParser::Parse() const
 
 					buffer[index++] = L'\0';
 
-					_wordHandler(std::wstring(buffer,  buffer + index));
+					_wordHandler(std::wstring(buffer, buffer + index));
 					delete[] buffer;
+				}
 
-					splitterStartIndex = splitterEndIndex = -1;
+
+				wordStartIndex = wordEndIndex = -1;
+			}
+			else 
+			{
+				if (wordStartIndex == -1) {
+					wordStartIndex = i;
 				}
 			}
 		}
 	}
+
+	wif.close();
 }
