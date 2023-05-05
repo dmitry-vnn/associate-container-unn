@@ -34,7 +34,7 @@ add_executable(
 	run_all_tests							#Name of executable file
 											#Add source files (test files)
 	${TESTS_FOLDER}
- "tests/hash_tests.cpp" "tests/hash_table_tests.cpp")
+ "tests/hash_tests.cpp" "tests/hash_table_tests.cpp" "tests/text_parser_tests.cpp")
 
 target_link_libraries(						#Connect libraries
   run_all_tests								
