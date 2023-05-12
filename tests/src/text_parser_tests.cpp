@@ -13,7 +13,7 @@ void Localize()
 	std::locale::global(system);
 }
 
-std::string filePath = R"(..\..\..\text.txt)";
+std::string filePath = R"(..\..\..\..\text.txt)";
 
 
 TEST(TextParser, test_file_input)
