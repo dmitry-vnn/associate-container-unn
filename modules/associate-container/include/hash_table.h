@@ -131,7 +131,7 @@ private:
 
 public:
 	explicit HashTable(
-		size_t size,
+		size_t size = 16,
 		double loadFactor = 0.75,
 		double increaseSizeMultiplier = 2,
 		HashCodeFunctor hashCodeFunctor = std::hash<K>()
