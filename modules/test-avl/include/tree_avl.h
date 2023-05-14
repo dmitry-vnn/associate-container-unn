@@ -4,161 +4,67 @@
 #include <string>
 #include <algorithm>
 #include <memory>
-#include <iterator>
 #include <stdexcept>
 
 template<class T>
-class Node {
+struct Node {
 
-public:
 	T data;
 
-	short depth;
-	size_t n;
+	short depth = 1;
+	size_t size = 1;
 
 	Node* parent = nullptr;
 	Node* leftChild = nullptr;
 	Node* rightChild = nullptr;
 
-	Node(): depth(1), n(1) {}
 
-	explicit Node(const T& t) noexcept
-		: data(t)
-		, depth(1)
-		, n(1)
-		, parent(nullptr)
-		, leftChild(nullptr)
-		, rightChild(nullptr) {}
+public:
 
-	explicit Node(T&& t) noexcept
-		: data(std::move(t))
-		, depth(1)
-		, n(1)
-		, parent(nullptr)
-		, leftChild(nullptr)
-		, rightChild(nullptr) {}
-
+	explicit Node(T data = T()): data(data) {}
 
 	void UpdateDepth() {
 		depth = 1 + std::max(leftChild ? leftChild->depth : 0,
 			rightChild ? rightChild->depth : 0);
 	}
 
-	void UpdateN() {
-		n = 1 + (leftChild ? leftChild->n : 0)
-			+ (rightChild ? rightChild->n : 0);
+	void UpdateSize() {
+		size = 1 + (leftChild ? leftChild->size : 0)
+			+ (rightChild ? rightChild->size : 0);
 	}
 
-	short Imbalance() {
+	short DepthsDifferent() {
 		return (rightChild ? rightChild->depth : 0)
 			- (leftChild ? leftChild->depth : 0);
 	}
 };
 
 
-
-
 template<class T>
 class Iterator {
 
-	//template <typename U, typename V>
-	//friend class tree::const_iterator;
-
+private:
 	using TypedNode = Node<T>;
+
+public:
+	TypedNode* _nodeCursor;
+
 public:
 
-	typedef std::bidirectional_iterator_tag iterator_category;
+	explicit Iterator(TypedNode* node = nullptr): _nodeCursor(node) {}
 
-	Iterator() {
-		_nodeCursor = nullptr;
+	Iterator(const Iterator& other) = default;
+	Iterator& operator=(const Iterator& other) = default;
+
+	bool operator==(const Iterator& other) const {
+		return _nodeCursor == other._nodeCursor;
 	}
 
-	explicit Iterator(TypedNode* p) {
-		_nodeCursor = p;
+	bool operator!=(const Iterator& other) const {
+		return !operator==(other);
 	}
 
-	Iterator(const Iterator& it) {
-		_nodeCursor = it._nodeCursor;
-	}
-
-	Iterator& operator=(const Iterator& it) {
-		_nodeCursor = it._nodeCursor;
-		return *this;
-	}
-
-	bool operator==(const Iterator& it) const {
-		return _nodeCursor == it._nodeCursor;
-	}
-
-	bool operator!=(const Iterator& it) const {
-		return _nodeCursor != it._nodeCursor;
-	}
-
-	bool operator<(const Iterator& it) const {
-		return **this < *it;
-	}
-
-	bool operator>(const Iterator& it) const {
-		return **this > *it;
-	}
-
-	bool operator<=(const Iterator& it) const {
-		return **this <= *it;
-	}
-
-	bool operator>=(const Iterator& it) const {
-		return **this >= *it;
-	}
-
-	// pre-increment
-	Iterator& operator++() {
-		if (_nodeCursor->rightChild) {
-			_nodeCursor = _nodeCursor->rightChild;
-			while (_nodeCursor->leftChild) {
-				_nodeCursor = _nodeCursor->leftChild;
-			}
-		}
-		else {
-			TypedNode* before;
-			do {
-				before = _nodeCursor;
-				_nodeCursor = _nodeCursor->parent;
-			} while (_nodeCursor && before == _nodeCursor->rightChild);
-		}
-		return *this;
-	}
-
-	// post-increment
-	Iterator operator++(int) {
-		Iterator old(*this);
-		++(*this);
-		return old;
-	}
-
-	// pre-decrement
-	Iterator& operator--() {
-		if (_nodeCursor->leftChild) {
-			_nodeCursor = _nodeCursor->leftChild;
-			while (_nodeCursor->rightChild) {
-				_nodeCursor = _nodeCursor->rightChild;
-			}
-		}
-		else {
-			TypedNode* before;
-			do {
-				before = _nodeCursor;
-				_nodeCursor = _nodeCursor->parent;
-			} while (_nodeCursor && before == _nodeCursor->leftChild);
-		}
-		return *this;
-	}
-
-	// post-decrement
-	Iterator operator--(int) {
-		Iterator old(*this);
-		--* this;
-		return old;
-	}
+	Iterator& operator++();
 
 	T& operator*() const {
 		return _nodeCursor->data;
@@ -167,146 +73,22 @@ public:
 	T* operator->() const {
 		return &_nodeCursor->data;
 	}
-public:
-	TypedNode* _nodeCursor;
 };
-
-
-
-
-
-template<class T>
-class ConstIterator {
-public:
-
-	typedef std::bidirectional_iterator_tag iterator_category;
-
-	using TypedNode = Node<T>;
-	using Iterator = Iterator<T>;
-
-	ConstIterator() {
-		_nodeCursor = nullptr;
-	}
-
-	ConstIterator(const TypedNode* p) {
-		_nodeCursor = p;
-	}
-
-	ConstIterator(const ConstIterator& it) {
-		_nodeCursor = it._nodeCursor;
-	}
-
-	ConstIterator(const Iterator& it) {
-		_nodeCursor = it._nodeCursor;
-	}
-
-	ConstIterator& operator=(const ConstIterator& it) {
-		_nodeCursor = it._nodeCursor;
-		return *this;
-	}
-
-	bool operator==(const ConstIterator& it) const {
-		return _nodeCursor == it._nodeCursor;
-	}
-
-	bool operator!=(const ConstIterator& it) const {
-		return _nodeCursor != it._nodeCursor;
-	}
-
-	bool operator<(const ConstIterator& it) const {
-		return **this < *it;
-	}
-
-	bool operator>(const ConstIterator& it) const {
-		return **this > *it;
-	}
-
-	bool operator<=(const ConstIterator& it) const {
-		return **this <= *it;
-	}
-
-	bool operator>=(const ConstIterator& it) const {
-		return **this >= *it;
-	}
-
-	// pre-increment
-	ConstIterator& operator++() {
-		if (_nodeCursor->rightChild) {
-			_nodeCursor = _nodeCursor->rightChild;
-			while (_nodeCursor->leftChild) {
-				_nodeCursor = _nodeCursor->leftChild;
-			}
-		}
-		else {
-			const TypedNode* before;
-			do {
-				before = _nodeCursor;
-				_nodeCursor = _nodeCursor->parent;
-			} while (_nodeCursor && before == _nodeCursor->rightChild);
-		}
-		return *this;
-	}
-
-	// post-increment
-	ConstIterator operator++(int) {
-		ConstIterator old(*this);
-		++(*this);
-		return old;
-	}
-
-	// pre-decrement
-	ConstIterator& operator--() {
-		if (_nodeCursor->leftChild) {
-			_nodeCursor = _nodeCursor->leftChild;
-			while (_nodeCursor->rightChild) {
-				_nodeCursor = _nodeCursor->rightChild;
-			}
-		}
-		else {
-			const TypedNode* before;
-			do {
-				before = _nodeCursor;
-				_nodeCursor = _nodeCursor->parent;
-			} while (_nodeCursor && before == _nodeCursor->leftChild);
-		}
-		return *this;
-	}
-
-	// post-decrement
-	ConstIterator operator--(int) {
-		ConstIterator old(*this);
-		--(*this);
-		return old;
-	}
-
-	const T& operator*() const {
-		return static_cast<const T&>(_nodeCursor->data);
-	}
-
-	const T* operator->() const {
-		return &_nodeCursor->data;
-	}
-public:
-	TypedNode const* _nodeCursor;
-};
-
-
-
 
 template <typename T>
 class Tree {
 
 private:
 	using Node = Node<T>;
-	using ConstIterator = ConstIterator<T>;
 	using Iterator = Iterator<T>;
+	using ConstIterator = Iterator;
 
 private:
 	Node* _root;
 
 public:
 
-	Tree(): _root(new Node) { _root->n = 0; }
+	Tree(): _root(new Node) { _root->size = 0; }
 
 	~Tree();
 
@@ -323,24 +105,39 @@ public:
 	Iterator End() { return Iterator(_root); }
 	ConstIterator End() const { return ConstIterator(_root); }
 
-	Iterator Find(const T& t);
-	Iterator Insert(const T& t);
-	Iterator Erase(Iterator it);
+	Iterator Find(const T& element);
+	void Insert(const T& element);
+	Iterator Erase(Iterator iterator);
 
-	void Remove(const T& t);
-
-	size_t Size() const { return _root->n; }
-
-	bool Empty() const { return _root->leftChild == nullptr; }
+	size_t Size() const { return _root->size; }
 
 
 private:
-	void RotateLeft(Node* n);
-	void RotateRight(Node* n);
+	void RotateLeft(Node* node);
+	void RotateRight(Node* node);
 
-	void FreeChildren(Node* nd);
+	void FreeChildren(Node* node);
 };
 
+
+template <class T>
+Iterator<T>& Iterator<T>::operator++()
+{
+	if (_nodeCursor->rightChild != nullptr) {
+		_nodeCursor = _nodeCursor->rightChild;
+		while (_nodeCursor->leftChild != nullptr) {
+			_nodeCursor = _nodeCursor->leftChild;
+		}
+	}
+	else {
+		TypedNode* before;
+		do {
+			before = _nodeCursor;
+			_nodeCursor = _nodeCursor->parent;
+		} while (_nodeCursor && before == _nodeCursor->rightChild);
+	}
+	return *this;
+}
 
 template <typename T>
 Tree<T>::~Tree()
@@ -374,23 +171,20 @@ typename Tree<T>::ConstIterator Tree<T>::Begin() const
 }
 
 template <typename T>
-typename Tree<T>::Iterator Tree<T>::Insert(const T& t)
+void Tree<T>::Insert(const T& element)
 {
-	Iterator res;
 
 	// descent the search tree
 	Node* parent = _root;
 	while (true) {
-		++parent->n;
-		if (parent == _root || t < parent->data) {
+		++parent->size;
+		if (parent == _root || element < parent->data) {
 			if (parent->leftChild) {
 				parent = parent->leftChild;
 			}
 			else {
-				parent->leftChild = new Node(t);
-
+				parent->leftChild = new Node(element);
 				parent->leftChild->parent = parent;
-				res = Iterator(parent->leftChild);
 				break;
 			}
 		}
@@ -399,57 +193,60 @@ typename Tree<T>::Iterator Tree<T>::Insert(const T& t)
 				parent = parent->rightChild;
 			}
 			else {
-				parent->rightChild = new Node(t);
+				parent->rightChild = new Node(element);
 				parent->rightChild->parent = parent;
-				res = Iterator(parent->rightChild);
 				break;
 			}
 		}
 	}
-	short branch_depth = 1;
+
+	short branchDepth = 1;
 	do {
-		if (parent->depth > branch_depth)
+		if (parent->depth > branchDepth)
 			break;
-		parent->depth = 1 + branch_depth;
+		parent->depth = 1 + branchDepth;
 		if (parent == _root)
 			break;
-		if (parent->Imbalance() < -1) {
+		if (parent->DepthsDifferent() < -1) {
 			// check for double-rotation case
-			if (parent->leftChild->Imbalance() > 0) {
+			if (parent->leftChild->DepthsDifferent() > 0) {
 				RotateLeft(parent->leftChild);
 			}
 			RotateRight(parent);
 			break;
 		}
-		else if (parent->Imbalance() > 1) {
+		if (parent->DepthsDifferent() > 1) {
 			// check for double-rotation case
-			if (parent->rightChild->Imbalance() < 0) {
+			if (parent->rightChild->DepthsDifferent() < 0) {
 				RotateRight(parent->rightChild);
 			}
 			RotateLeft(parent);
 			break;
 		}
-		branch_depth = parent->depth;
+		branchDepth = parent->depth;
 		parent = parent->parent;
 	} while (parent);
-	return res;
 }
 
 template <typename T>
-typename Tree<T>::Iterator Tree<T>::Erase(Iterator it)
+typename Tree<T>::Iterator Tree<T>::Erase(Iterator iterator)
 {
-	Iterator itn(it);
-	++itn;
-	Node* ptr = it._nodeCursor;
+	Iterator iteratorCopy(iterator);
+	++iteratorCopy;
+
+	Node* currentNode = iterator._nodeCursor;
+
 	Node* q;
-	if (!ptr->leftChild || !ptr->rightChild) {
-		q = ptr;
+	if (currentNode->leftChild == nullptr 
+		|| currentNode->rightChild == nullptr) {
+		q = currentNode;
 	}
 	else {
-		q = itn._nodeCursor;
+		q = iteratorCopy._nodeCursor;
 	}
+
 	Node* s;
-	if (q->leftChild) {
+	if (q->leftChild != nullptr) {
 		s = q->leftChild;
 		q->leftChild = nullptr;
 	}
@@ -457,7 +254,7 @@ typename Tree<T>::Iterator Tree<T>::Erase(Iterator it)
 		s = q->rightChild;
 		q->rightChild = nullptr;
 	}
-	if (s) {
+	if (s != nullptr) {
 		s->parent = q->parent;
 	}
 	if (q == q->parent->leftChild) {
@@ -466,155 +263,147 @@ typename Tree<T>::Iterator Tree<T>::Erase(Iterator it)
 	else {
 		q->parent->rightChild = s;
 	}
-	Node* q_parent = q->parent;
-	if (q != ptr) {
-		q->parent = ptr->parent;
-		if (q->parent->leftChild == ptr) {
+	Node* qParent = q->parent;
+	if (q != currentNode) {
+		q->parent = currentNode->parent;
+		if (q->parent->leftChild == currentNode) {
 			q->parent->leftChild = q;
 		}
 		else {
 			q->parent->rightChild = q;
 		}
-		q->leftChild = ptr->leftChild;
-		if (q->leftChild)
+		q->leftChild = currentNode->leftChild;
+		if (q->leftChild != nullptr)
 			q->leftChild->parent = q;
-		q->rightChild = ptr->rightChild;
-		if (q->rightChild)
+		q->rightChild = currentNode->rightChild;
+		if (q->rightChild != nullptr)
 			q->rightChild->parent = q;
-		q->n = ptr->n;
-		q->depth = ptr->depth;
-		ptr->leftChild = nullptr;
-		ptr->rightChild = nullptr;
+		q->size = currentNode->size;
+		q->depth = currentNode->depth;
+		currentNode->leftChild = nullptr;
+		currentNode->rightChild = nullptr;
 	}
-	if (q_parent == ptr) {
-		q_parent = q;
+	if (qParent == currentNode) {
+		qParent = q;
 	}
 	Node* parent;
-	for (parent = q_parent; parent; parent = parent->parent) {
-		--parent->n;
+	for (parent = qParent; parent != nullptr; parent = parent->parent) {
+		--parent->size;
 	}
-	for (parent = q_parent; parent; parent = parent->parent) {
+	for (parent = qParent; parent != nullptr; parent = parent->parent) {
 		parent->UpdateDepth();
 		if (parent == _root)
 			break;
-		if (parent->Imbalance() < -1) {
+		if (parent->DepthsDifferent() < -1) {
 			// check for double-rotation case
-			if (parent->leftChild->Imbalance() > 0) {
+			if (parent->leftChild->DepthsDifferent() > 0) {
 				RotateLeft(parent->leftChild);
 			}
 			RotateRight(parent);
 			break;
 		}
-		else if (parent->Imbalance() > 1) {
+		if (parent->DepthsDifferent() > 1) {
 			// check for double-rotation case
-			if (parent->rightChild->Imbalance() < 0) {
+			if (parent->rightChild->DepthsDifferent() < 0) {
 				RotateRight(parent->rightChild);
 			}
 			RotateLeft(parent);
 			break;
 		}
 	}
-	delete ptr;
-	return itn;
+	delete currentNode;
+	return iteratorCopy;
 }
 
 template <typename T>
-void Tree<T>::Remove(const T& t)
+void Tree<T>::RotateLeft(Node* node)
 {
-	Iterator it = find(t);
-	if (it == End())
-		return;
-	do {
-		it = erase(it);
-	} while (*it == t);
-}
-
-template <typename T>
-void Tree<T>::RotateLeft(Node* n)
-{
-	Node* tmp = n->rightChild->leftChild;
-	if (n == n->parent->leftChild) {
-		n->parent->leftChild = n->rightChild;
+	Node* tempNode = node->rightChild->leftChild;
+	if (node == node->parent->leftChild) {
+		node->parent->leftChild = node->rightChild;
 	}
 	else {
-		n->parent->rightChild = n->rightChild;
+		node->parent->rightChild = node->rightChild;
 	}
-	n->rightChild->parent = n->parent;
-	n->rightChild->leftChild = n;
-	n->parent = n->rightChild;
-	n->rightChild = tmp;
-	if (tmp)
-		tmp->parent = n;
+	node->rightChild->parent = node->parent;
+	node->rightChild->leftChild = node;
+	node->parent = node->rightChild;
+	node->rightChild = tempNode;
+
+	if (tempNode != nullptr)
+		tempNode->parent = node;
 
 	// update ns
-	n->UpdateN();
-	n->parent->UpdateN();
+	node->UpdateSize();
+	node->parent->UpdateSize();
 
 	// update depths
 	do {
-		n->UpdateDepth();
-		n = n->parent;
-	} while (n);
+		node->UpdateDepth();
+		node = node->parent;
+	} while (node != nullptr);
 }
 
 template <typename T>
-void Tree<T>::RotateRight(Node* n)
+void Tree<T>::RotateRight(Node* node)
 {
-	Node* tmp = n->leftChild->rightChild;
-	if (n == n->parent->leftChild) {
-		n->parent->leftChild = n->leftChild;
+	Node* tempNode = node->leftChild->rightChild;
+	if (node == node->parent->leftChild) {
+		node->parent->leftChild = node->leftChild;
 	}
 	else {
-		n->parent->rightChild = n->leftChild;
+		node->parent->rightChild = node->leftChild;
 	}
-	n->leftChild->parent = n->parent;
-	n->leftChild->rightChild = n;
-	n->parent = n->leftChild;
-	n->leftChild = tmp;
-	if (tmp)
-		tmp->parent = n;
+	node->leftChild->parent = node->parent;
+	node->leftChild->rightChild = node;
+	node->parent = node->leftChild;
+	node->leftChild = tempNode;
+	if (tempNode != nullptr)
+		tempNode->parent = node;
 
 	// update ns
-	n->UpdateN();
-	n->parent->UpdateN();
+	node->UpdateSize();
+	node->parent->UpdateSize();
 
 	// update depths
 	do {
-		n->UpdateDepth();
-		n = n->parent;
-	} while (n);
+		node->UpdateDepth();
+		node = node->parent;
+	} while (node != nullptr);
 }
 
 template <typename T>
-void Tree<T>::FreeChildren(Node* nd)
+void Tree<T>::FreeChildren(Node* node)
 {
-	if (nd->leftChild) {
-		FreeChildren(nd->leftChild);
+	if (node->leftChild != nullptr) {
+		FreeChildren(node->leftChild);
 
-		delete nd->leftChild;
+		delete node->leftChild;
 
 	}
-	if (nd->rightChild) {
-		FreeChildren(nd->rightChild);
+	if (node->rightChild != nullptr) {
+		FreeChildren(node->rightChild);
 
-		delete nd->rightChild;
+		delete node->rightChild;
 	}
 }
 
 template <typename T>
-typename Tree<T>::Iterator Tree<T>::Find(const T& t)
+typename Tree<T>::Iterator Tree<T>::Find(const T& element)
 {
-	Node* ptr = _root->leftChild;
-	while (ptr) {
-		if (t == ptr->data) {
-			return Iterator(ptr);
+	Node* node = _root->leftChild;
+
+	while (node != nullptr) {
+		if (element == node->data) {
+			return Iterator(node);
 		}
-		else if (t < ptr->data) {
-			ptr = ptr->leftChild;
+		if (element < node->data) {
+			node = node->leftChild;
 		}
 		else {
-			ptr = ptr->rightChild;
+			node = node->rightChild;
 		}
 	}
+
 	return End();
 }
