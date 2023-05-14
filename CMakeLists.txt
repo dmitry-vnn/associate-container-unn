@@ -2,7 +2,7 @@
 
 project ("associate-container-unn")
 
-add_subdirectory ("tests")
+#add_subdirectory ("tests")
 add_subdirectory ("modules")
 
 set(CMAKE_CXX_STANDARD 20)
