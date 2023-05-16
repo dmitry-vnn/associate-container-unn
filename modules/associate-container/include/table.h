@@ -178,6 +178,15 @@ class Table
 {
 
 protected:
+	size_t _lastIterationCount = 0;
+
+public:
+	size_t GetLastIterationCount() const
+	{
+		return _lastIterationCount;
+	}
+
+protected:
 	using TypedRecord = Record<K, V>;
 	using RecordPointer = TypedRecord*;
 	using RecordReference = TypedRecord&;

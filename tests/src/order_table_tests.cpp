@@ -1,9 +1,49 @@
 ﻿
-#ifdef ___DISABLE___
 
 #include <gtest/gtest.h>
 
 #include "ordered_table.h"
+
+template<class K, class V>
+void PrintTable(const Table<K, V>& table)
+{
+	for (auto iterator = table.Begin(); iterator != table.End(); ++iterator)
+	{
+		std::cout << iterator->key << ": " << iterator->value << std::endl;
+	}
+
+	std::cout << std::endl;
+}
+
+TEST(OrderedTable, remove)
+{
+	OrderedTable<int, int> table;
+
+	table.Add(52, 0);
+	table.Add(5, 0);
+	table.Add(10, 0);
+	table.Add(155, 0);
+	table.Add(5, 0);
+	table.Add(38, 0);
+	table.Add(47, 0);
+	table.Add(21, 0);
+
+	table.Remove(5);
+
+	PrintTable(table);
+
+	table.Remove(155);
+	table.Remove(10);
+
+	PrintTable(table);
+
+	table.Remove(5);
+
+	PrintTable(table);
+
+}
+
+#ifdef __
 
 TEST(order_table_tests, init)
 {

@@ -80,8 +80,6 @@ protected:
 
 	size_t _size;
 	size_t _capacity;
-
-public:
 	RecordPointer _data;
 
 
@@ -143,7 +141,8 @@ private:
 protected:
 	void PushBack(TypedRecord record);
 	void Insert(TypedRecord record, size_t position);
-	void RemoveByPosition(size_t position);
+
+	virtual void RemoveByPosition(size_t position) = 0;
 
 
 };
@@ -162,6 +161,7 @@ typename Table<K, V>::ConstIterator ArrayTable<K, V>::Remove(const K& key)
 	if (position != -1)
 	{
 		RemoveByPosition(position);
+		_size--;
 	}
 
 	return ArrayTableIterator<K, V>::Create(position == -1 ? _data + _size : _data + position);
@@ -233,6 +233,8 @@ void ArrayTable<K, V>::PushBack(TypedRecord record)
 template <class K, class V>
 void ArrayTable<K, V>::Insert(TypedRecord record, size_t position)
 {
+	auto& iterations = base::_lastIterationCount;
+	
 	if (position == _size)
 	{
 		PushBack(std::move(record));
@@ -245,6 +247,7 @@ void ArrayTable<K, V>::Insert(TypedRecord record, size_t position)
 		{
 			for (size_t i = _size; i > position; i--)
 			{
+				++iterations;
 				_data[i] = std::move(_data[i - 1]);
 			}
 
@@ -263,6 +266,8 @@ void ArrayTable<K, V>::Insert(TypedRecord record, size_t position)
 				ensuredData
 			);
 
+			iterations += position;
+
 			ensuredData[position] = std::move(record);
 
 			std::move(
@@ -270,6 +275,8 @@ void ArrayTable<K, V>::Insert(TypedRecord record, size_t position)
 				_data + _size,
 				ensuredData + position + 1
 			);
+
+			iterations += (_size - position);
 			
 			delete[] _data;
 
@@ -281,15 +288,5 @@ void ArrayTable<K, V>::Insert(TypedRecord record, size_t position)
 	}
 }
 
-template <class K, class V>
-void ArrayTable<K, V>::RemoveByPosition(size_t position)
-{
-	for (size_t i = position; i < _size - 1; i++)
-	{
-		_data[i] = std::move(_data[i + 1]);
-	}
-
-	_size--;
-}
 
 //#endif

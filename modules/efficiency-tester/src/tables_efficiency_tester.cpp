@@ -113,19 +113,21 @@ void TablesEfficiencyTester::TestTables()
 		std::unique_ptr<Table<K, V>>
 	> tables;
 
-	/*tables.insert({
+	size_t initialSize = 30000;
+
+	tables.insert({
 		TableType::SCAN_TABLE,
-		std::make_unique<ScanTable<K, V>>()
+		std::make_unique<ScanTable<K, V>>(initialSize)
+	});
+	
+	tables.insert({
+		TableType::ORDERED_TABLE,
+		std::make_unique<OrderedTable<K, V>>(initialSize)
 	});
 
 	tables.insert({
-		TableType::ORDERED_TABLE,
-		std::make_unique<OrderedTable<K, V>>()
-	});*/
-
-	tables.insert({
 		TableType::HASH_TABLE,
-		std::make_unique<HashTable<K, V, true>>()
+		std::make_unique<HashTable<K, V, true>>(initialSize)
 	});
 
 

@@ -23,8 +23,9 @@ public:
 public:
 	void Add(const K& key, V value) override;
 
-protected:
+private:
 	int FindPosition(const K& key) const override;
+	void RemoveByPosition(size_t position) override;
 
 public:
 	~ScanTable() override = default;
@@ -47,8 +48,13 @@ template <class K, class V>
 int ScanTable<K, V>::FindPosition(const K& key) const
 {
 
+	auto& iterations = const_cast<size_t&>(base::_lastIterationCount);
+
+	iterations = 0;
+	
 	for (size_t i = 0; i < base::_size; i++)
 	{
+		++iterations;
 		if (base::_data[i].key == key)
 		{
 			return i;
@@ -57,4 +63,19 @@ int ScanTable<K, V>::FindPosition(const K& key) const
 
 	return -1;
 
+}
+
+template <class K, class V>
+void ScanTable<K, V>::RemoveByPosition(size_t position)
+{
+	auto& iterations = base::_lastIterationCount;
+	iterations = 0;
+
+	auto size = base::_size;
+	auto data = base::_data;
+
+	if (position != size - 1)
+	{
+		data[position] = std::move(data[size - 1]);
+	}
 }

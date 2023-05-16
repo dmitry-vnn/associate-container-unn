@@ -1,14 +1,45 @@
-#ifdef ___DISABLE___
-
 #include <gtest/gtest.h>
 
-#include "fake_table.h"
 #include "scan_table.h"
 
 #include <iostream>
 
-#include "array_table.h"
+template<class K, class V>
+void PrintTable(const Table<K, V>& table)
+{
+	for (auto iterator = table.Begin(); iterator != table.End(); ++iterator)
+	{
+		std::cout << iterator->key << ": " << iterator->value << std::endl;
+	}
 
+	std::cout << std::endl;
+}
+
+TEST(ScanTable, remove)
+{
+	ScanTable<int, int> table;
+
+	table.Add(1, 0);
+	table.Add(5, 0);
+	table.Add(10, 0);
+	table.Add(15, 0);
+
+	table.Remove(1);
+
+	PrintTable(table);
+
+	table.Remove(15);
+	table.Remove(10);
+
+	PrintTable(table);
+
+	table.Remove(5);
+
+	PrintTable(table);
+
+}
+
+#ifdef ___DISABLE___
 template<class K, class V>
 void F(ArrayTable<K, V>* table)
 {

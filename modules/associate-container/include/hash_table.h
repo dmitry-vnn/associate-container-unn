@@ -428,6 +428,9 @@ template <class K, class V, bool needRehashing>
 bool HashTable<K, V, needRehashing>::AddRecord(TypedNode* storage, size_t size, const K& key, V value) const
 {
 
+	auto& iterations = const_cast<size_t&>(Table<K, V>::_lastIterationCount);
+	iterations = 0;
+
 	size_t position = Hash(key, size);
 
 	auto* currentNode = storage + position;
@@ -443,6 +446,7 @@ bool HashTable<K, V, needRehashing>::AddRecord(TypedNode* storage, size_t size, 
 
 	do
 	{
+		++iterations;
 		if (currentNode->record->key == key)
 		{
 			isKeyExists = true;
@@ -480,6 +484,9 @@ template <class K, class V, bool needRehashing>
 std::tuple<Node<K, V>*, Node<K, V>*, Node<K, V>*> HashTable<K, V, needRehashing>::FindNode(const K& key) const
 {
 
+	auto& iterations = const_cast<size_t&>(Table<K, V>::_lastIterationCount);
+	iterations = 0;
+
 	size_t position = Hash(key, _size);
 
 	if (_data[position].record != nullptr)
@@ -491,7 +498,7 @@ std::tuple<Node<K, V>*, Node<K, V>*, Node<K, V>*> HashTable<K, V, needRehashing>
 
 		while (true)
 		{
-
+			++iterations;
 			if (depthNode->record->key != key)
 			{
 

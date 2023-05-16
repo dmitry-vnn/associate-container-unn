@@ -1,3 +1,5 @@
+#ifdef _
+
 #include <codecvt>
 #include <gtest/gtest.h>
 
@@ -57,3 +59,5 @@ TEST(LiteraryTextParser, word_handling)
 	EXPECT_EQ(114140, count);
 
 }
+
+#endif

@@ -29,7 +29,10 @@ public:
 	void Add(const K& key, V value) override;
 
 private:
+
 	int FindPosition(const K& key) const override;
+	void RemoveByPosition(size_t position) override;
+
 	std::pair<bool, size_t> BinarySearchRecord(const K& key) const;
 };
 
@@ -67,8 +70,24 @@ int OrderedTable<K, V>::FindPosition(const K& key) const
 }
 
 template <class K, class V>
+void OrderedTable<K, V>::RemoveByPosition(size_t position)
+{
+	auto& iterations = base::_lastIterationCount;
+	iterations = 0;
+
+	for (size_t i = position; i < base::_size - 1; i++)
+	{
+		++iterations;
+		base::_data[i] = std::move(base::_data[i + 1]);
+	}
+}
+
+template <class K, class V>
 std::pair<bool, size_t> OrderedTable<K, V>::BinarySearchRecord(const K& key) const
 {
+
+	auto& iterations = const_cast<size_t&>(base::_lastIterationCount);
+	iterations = 0;
 
 	if (base::_size == 0)
 	{
@@ -80,6 +99,8 @@ std::pair<bool, size_t> OrderedTable<K, V>::BinarySearchRecord(const K& key) con
 
 	while (first <= last)
 	{
+		++iterations;
+
 		size_t mid = (first + last) / 2;
 
 		auto& currentRecord = base::_data[mid];
