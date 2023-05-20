@@ -78,7 +78,12 @@ void TextWordParser::Parse() const
 
 					buffer[index++] = L'\0';
 
-					_wordHandler(std::wstring(buffer, buffer + index));
+					std::wstring word(buffer, buffer + index);
+
+					if (!word.empty())
+					{
+						_wordHandler(std::wstring(buffer, buffer + index));
+					}
 					delete[] buffer;
 				}
 
