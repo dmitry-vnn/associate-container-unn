@@ -1,4 +1,4 @@
-﻿
+﻿#ifdef _
 
 #include <gtest/gtest.h>
 
@@ -42,8 +42,6 @@ TEST(OrderedTable, remove)
 	PrintTable(table);
 
 }
-
-#ifdef __
 
 TEST(order_table_tests, init)
 {

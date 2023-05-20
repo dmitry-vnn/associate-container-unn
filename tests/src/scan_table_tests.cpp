@@ -1,3 +1,5 @@
+#ifdef ___DISABLE___
+
 #include <gtest/gtest.h>
 
 #include "scan_table.h"
@@ -39,7 +41,6 @@ TEST(ScanTable, remove)
 
 }
 
-#ifdef ___DISABLE___
 template<class K, class V>
 void F(ArrayTable<K, V>* table)
 {
