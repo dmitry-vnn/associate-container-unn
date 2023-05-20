@@ -8,9 +8,7 @@ int main()
 
 	TablesEfficiencyTester tester;
 
-	tester.Test();
-
-	auto totalStatistic = tester.GetStatistic();
+	tester.Parse();
 
 	printf(
 		"parsing file time (s): %.3f\n",
@@ -18,18 +16,37 @@ int main()
 		tester.GetParsingWordsFromFileDurationSeconds()
 	);
 
-	printf("tables info:\n");
 	printf(
-		"%-15s%-15s%-15s%-15s%-15s\n",
+		"total words count: %llu\n",
 
-		"TABLE",
-		"ADD TIME (s)",
-		"FIND TIME",
-		"REMOVE TIME",
-		"RECORDS"
+		tester.GetWordsCount()
 	);
 
-	printf("%s\n", std::string(15 * 5, '-').c_str());
+	tester.Test();
+
+	printf(
+		"unique words count: %llu\n",
+
+		tester.GetUniqueWordsCount()
+	);
+
+	auto totalStatistic = tester.GetStatistic();
+
+	printf(
+		"%-15s%-15s%-20s%-15s%-20s%-15s%-20s%-15s%-20s\n",
+
+		"TABLE",
+		"GROUP TIME",
+		"GROUP ITERS",
+		"FIND TIME",
+		"FIND ITERS",
+		"REMOVE TIME",
+		"REMOVE ITERS",
+		"ADD TIME",
+		"ADD ITERS"
+	);
+
+	printf("%s\n", std::string(15 * 5 + 20 * 4, '-').c_str());
 
 	for (const auto & record : totalStatistic)
 	{
@@ -57,13 +74,17 @@ int main()
 		}
 
 		printf(
-			"%-15s%-15.3f%-15.3f%-15.3f%-15llu\n",
+			"%-15s%-15.3f%-20llu%-15.3f%-20llu%-15.3f%-20llu%-15.3f%-20llu\n",
 			
 			tableName.c_str(),
-			statistic.addRecordsTotalDurationTimeMillis,
-			statistic.findRecordTotalDurationTimeMillis,
-			statistic.removeRecordsTotalDurationTimeMillis,
-			statistic.totalRecordsCount
+			statistic.groupRecordsTimeMillis,
+			statistic.groupRecordsIterations,
+			statistic.findRecordsTimeMillis,
+			statistic.findRecordsIterations,
+			statistic.removeRecordsTimeMillis,
+			statistic.removeRecordsIterations,
+			statistic.addRecordsTimeMillis,
+			statistic.addRecordsIterations
 		);
 	}
 

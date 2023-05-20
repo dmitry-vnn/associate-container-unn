@@ -80,7 +80,13 @@ public:
 };
 
 template<class K, class V>
+class TreeTable;
+
+
+template<class K, class V>
 class TableIterator final : public std::iterator<std::input_iterator_tag, Record<K, V>> {
+
+	friend class TreeTable<K, V>;
 
 private:
 	using base = std::iterator<std::input_iterator_tag, Record<K, V>>;
@@ -199,7 +205,7 @@ public:
 	virtual void Add(const K& key, V value) = 0;
 	virtual ConstIterator Find(const K& key) const = 0;
 	virtual ConstIterator Remove(const K& key) = 0;
-	virtual size_t Size() = 0;
+	virtual size_t Size() const = 0;
 
 public:
 

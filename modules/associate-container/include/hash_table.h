@@ -149,7 +149,7 @@ public:
 	typename Table<K, V>::ConstIterator Find(const K& key) const override;
 	typename Table<K, V>::ConstIterator Remove(const K& key) override;
 
-	size_t Size() override { return _elementsCount; }
+	size_t Size() const override { return _elementsCount; }
 
 	typename Table<K, V>::Iterator Begin() override;
 	typename Table<K, V>::Iterator End() override;

@@ -73,7 +73,6 @@ template <class K, class V>
 void OrderedTable<K, V>::RemoveByPosition(size_t position)
 {
 	auto& iterations = base::_lastIterationCount;
-	iterations = 0;
 
 	for (size_t i = position; i < base::_size - 1; i++)
 	{

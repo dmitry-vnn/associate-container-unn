@@ -113,7 +113,8 @@ public:
 
 	typename base::ConstIterator Remove(const K& key) override;
 	typename base::ConstIterator Find(const K& key) const override;
-	size_t Size() override;
+
+	size_t Size() const override;
 
 	~ArrayTable() override { delete[] _data; }
 
@@ -184,7 +185,7 @@ typename Table<K, V>::ConstIterator ArrayTable<K, V>::Find(const K& key) const
 }
 
 template <class K, class V>
-size_t ArrayTable<K, V>::Size()
+size_t ArrayTable<K, V>::Size() const
 {
 	return _size;
 }

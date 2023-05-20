@@ -68,8 +68,8 @@ int ScanTable<K, V>::FindPosition(const K& key) const
 template <class K, class V>
 void ScanTable<K, V>::RemoveByPosition(size_t position)
 {
-	auto& iterations = base::_lastIterationCount;
-	iterations = 0;
+	//auto& iterations = base::_lastIterationCount;
+	//iterations = 0;
 
 	auto size = base::_size;
 	auto data = base::_data;
