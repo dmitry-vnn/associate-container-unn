@@ -8,11 +8,19 @@
 
 struct TableStatistic
 {
-	double addRecordsTotalDurationTimeMillis = 0;
-	double removeRecordsTotalDurationTimeMillis = 0;
-	double findRecordTotalDurationTimeMillis = 0;
+	double groupRecordsTimeMillis = 0;
 
-	size_t totalRecordsCount = 0;
+	double addRecordsTimeMillis = 0;
+	double removeRecordsTimeMillis = 0;
+	double findRecordsTimeMillis = 0;
+
+
+
+	size_t groupRecordsIterations = 0;
+
+	size_t addRecordsIterations = 0;
+	size_t removeRecordsIterations = 0;
+	size_t findRecordsIterations = 0;
 
 	TableStatistic() = default;
 };
@@ -34,19 +42,26 @@ class TablesEfficiencyTester
 private:
 	std::vector<std::wstring> _parsedWords;
 
+	std::map<
+		TableType,
+		std::unique_ptr<Table<std::wstring, size_t>>
+	> _tables;
+
 private:
 	std::map<TableType, TableStatistic> _statistic;
 
 private:
 	double _parsingWordsFromFileDurationSeconds;
 
+	size_t _uniqueWordsCount;
+
 public:
 	TablesEfficiencyTester() = default;
 
+	void Parse();
 	void Test();
 
 private:
-	void Parse();
 
 	void TestTable(
 		const std::pair<
@@ -66,5 +81,15 @@ public:
 	double GetParsingWordsFromFileDurationSeconds() const
 	{
 		return _parsingWordsFromFileDurationSeconds;
+	}
+
+	size_t GetWordsCount() const
+	{
+		return _parsedWords.size();
+	}
+
+	size_t GetUniqueWordsCount() const
+	{
+		return _uniqueWordsCount;
 	}
 };

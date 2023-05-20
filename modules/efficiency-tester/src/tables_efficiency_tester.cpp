@@ -1,12 +1,13 @@
 ﻿#include "tables_efficiency_tester.h"
 
-#include "hash_table.h"
 #include "literary_text_parser.h"
 
 #include <chrono>
 
 #include "ordered_table.h"
 #include "scan_table.h"
+#include "hash_table.h"
+#include "tree_table.h"
 
 using Time = std::chrono::time_point<std::chrono::system_clock>;
 
@@ -53,14 +54,21 @@ void TablesEfficiencyTester::TestTable(
 	auto& table = record.second;
 
 
+
 	auto startTime = TimeNow();
+
+	size_t iterations = 0;
 
 	for (const auto & word : _parsedWords)
 	{
 		auto iterator = table->Find(word);
+
+		iterations += table->GetLastIterationCount();
+
 		if (iterator == table->End())
 		{
 			table->Add(word, 1);
+			iterations += table->GetLastIterationCount();
 		} else
 		{
 			iterator->value++;
@@ -69,37 +77,75 @@ void TablesEfficiencyTester::TestTable(
 
 	auto endTime = TimeNow();
 
-	statistic.addRecordsTotalDurationTimeMillis = 
+	statistic.groupRecordsTimeMillis = 
 		DurationTimeSeconds(startTime, endTime);
 
+	statistic.groupRecordsIterations = iterations;
+
+
+
+
+
+
+	_uniqueWordsCount = table->Size();
+
+	iterations = 0;
+
 	startTime = TimeNow();
-
-
-	statistic.totalRecordsCount = table->Size();
-
 
 	for (const auto& word : _parsedWords)
 	{
 		auto iterator = table->Find(word);
+		iterations += table->GetLastIterationCount();
 	}
 
 	endTime = TimeNow();
 
-	statistic.findRecordTotalDurationTimeMillis =
+	statistic.findRecordsTimeMillis =
 		DurationTimeSeconds(startTime, endTime);
+
+	statistic.findRecordsIterations = iterations;
+
+
+
+
+	iterations = 0;
 
 	startTime = TimeNow();
 
 	for (const auto & word : _parsedWords)
 	{
 		table->Remove(word);
+		iterations += table->GetLastIterationCount();
 	}
 
 	endTime = TimeNow();
 
-	statistic.removeRecordsTotalDurationTimeMillis =
+	statistic.removeRecordsTimeMillis =
 		DurationTimeSeconds(startTime, endTime);
 
+	statistic.removeRecordsIterations = iterations;
+
+
+
+
+	iterations = 0;
+
+	startTime = TimeNow();
+
+	for (const auto& word : _parsedWords)
+	{
+		table->Add(word, 0);
+		iterations += table->GetLastIterationCount();
+	}
+
+	endTime = TimeNow();
+
+	statistic.addRecordsTimeMillis =
+		DurationTimeSeconds(startTime, endTime);
+
+	statistic.addRecordsIterations = iterations;
+	
 }
 
 void TablesEfficiencyTester::TestTables()
@@ -108,32 +154,33 @@ void TablesEfficiencyTester::TestTables()
 	using K = std::wstring;
 	using V = size_t;
 
-	std::map<
-		TableType,
-		std::unique_ptr<Table<K, V>>
-	> tables;
 
 	size_t initialSize = 30000;
 
-	tables.insert({
+	_tables.insert({
 		TableType::SCAN_TABLE,
 		std::make_unique<ScanTable<K, V>>(initialSize)
 	});
 	
-	tables.insert({
+	_tables.insert({
 		TableType::ORDERED_TABLE,
 		std::make_unique<OrderedTable<K, V>>(initialSize)
 	});
 
-	tables.insert({
+	_tables.insert({
 		TableType::HASH_TABLE,
-		std::make_unique<HashTable<K, V, true>>(initialSize)
+		std::make_unique<HashTable<K, V>>(initialSize)
+	});
+
+	_tables.insert({
+		TableType::TREE_TABLE,
+		std::make_unique<TreeTable<K, V>>()
 	});
 
 
-	auto iterator = tables.begin();
+	auto iterator = _tables.begin();
 
-	while (iterator != tables.end())
+	while (iterator != _tables.end())
 	{
 		_statistic.insert({iterator->first, {}});
 
@@ -141,7 +188,7 @@ void TablesEfficiencyTester::TestTables()
 	}
 
 
-	for (auto& record : tables)
+	for (auto& record : _tables)
 	{
 		TestTable(record);
 	}
@@ -149,7 +196,5 @@ void TablesEfficiencyTester::TestTables()
 
 void TablesEfficiencyTester::Test()
 {
-	Parse();
-
 	TestTables();
 }
