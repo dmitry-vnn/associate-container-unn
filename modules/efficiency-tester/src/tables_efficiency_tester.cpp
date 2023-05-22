@@ -31,7 +31,7 @@ void TablesEfficiencyTester::Parse()
 	auto startTime = TimeNow();
 
 	LiteraryTextParser parser(
-		R"(..\..\..\..\..\text.txt)", 
+		R"(..\..\..\..\..\text-full.txt)", 
 		[this] (const std::wstring& word)
 		{
 			_parsedWords.push_back(word);
@@ -157,7 +157,7 @@ void TablesEfficiencyTester::TestTables()
 
 	size_t initialSize = 30000;
 
-	_tables.insert({
+	/*_tables.insert({
 		TableType::SCAN_TABLE,
 		std::make_unique<ScanTable<K, V>>(initialSize)
 	});
@@ -165,17 +165,23 @@ void TablesEfficiencyTester::TestTables()
 	_tables.insert({
 		TableType::ORDERED_TABLE,
 		std::make_unique<OrderedTable<K, V>>(initialSize)
-	});
+	}); */
 
 	_tables.insert({
 		TableType::HASH_TABLE,
-		std::make_unique<HashTable<K, V>>(initialSize)
+		std::make_unique<HashTable<K, V, false>>(initialSize, 0.75, 2, [](auto& word) {
+			size_t hash = 0;
+			for (auto& c : word) {
+				hash += c;
+			}
+			return hash == 0 ? 0 : (hash % word.size()) / hash;
+		})
 	});
 
-	_tables.insert({
+	/*_tables.insert({
 		TableType::TREE_TABLE,
 		std::make_unique<TreeTable<K, V>>()
-	});
+	}); */
 
 
 	auto iterator = _tables.begin();
